@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>用 AI 一起工作｜Vibe Coding & AI Agent 實戰講義 — DIS Tech 湖口</title>
+<meta name="description" content="給 DIS Tech 同仁的新手友善教材：Vibe Coding 與 AI Agent（Claude Code / Codex / Antigravity / NotebookLM）在工作上的實際應用，含名片整理、客戶資料、競品分析、產品差異、用 AI 做簡報等實戰練習。" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Oswald:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+/* ============ Tokens (IASDR-inspired light theme) ============ */
+:root{
+  --font-display:"Oswald","Noto Sans TC",sans-serif;     /* big condensed headings */
+  --font-body:"Poppins","Noto Sans TC",system-ui,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+
+  --bg:#ffffff;
+  --bg-mint:#e9fbf3;            /* pale mint section */
+  --bg-soft:#f5f8f7;
+  --ink:#343a40;               /* strong headings */
+  --text:#495057;              /* body */
+  --muted:#727b85;
+  --faint:#9aa4ad;
+  --accent:#30b974;            /* fresh green (fills / borders / large text) */
+  --accent-2:#67bd92;
+  --accent-ink:#15805a;        /* green text on white (AA) */
+  --accent-soft:#d8f5e7;
+  --black:#15181c;             /* CTA / strong */
+  --border:#e6ebe9;
+  --border-soft:#eef2f0;
+  --warn:#b9770b; --warn-soft:#fdf3df;
+  --danger:#cf3b3b; --danger-soft:#fbe9e9;
+  --info:#1f7ae0; --info-soft:#e6f0fd;
+  --code-bg:#10211b;           /* dark green-ink prompt block */
+  --code-bd:#1d3a2e;
+
+  --radius:14px; --radius-sm:9px; --radius-lg:24px;
+  --maxw:900px; --sidebar-w:292px;
+  --shadow:0 14px 40px -26px rgba(20,40,32,.30);
+  --shadow-sm:0 6px 18px -12px rgba(20,40,32,.25);
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:var(--font-body);font-size:17px;line-height:1.75;font-weight:300;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--accent-ink);text-decoration:none}
+a:hover{text-decoration:underline}
+h1,h2,h3,h4{color:var(--ink);font-weight:600;line-height:1.18}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:6px}
+strong{color:var(--ink);font-weight:600}
+
+/* ============ Layout ============ */
+.layout{display:flex;min-height:100vh}
+.sidebar{
+  width:var(--sidebar-w);flex:0 0 var(--sidebar-w);
+  position:sticky;top:0;height:100vh;overflow-y:auto;
+  background:var(--bg);border-right:1px solid var(--border);padding:24px 16px 48px;
+}
+.brand{display:flex;align-items:center;gap:12px;padding:4px 8px 18px;border-bottom:1px solid var(--border-soft);margin-bottom:10px}
+.brand .logo{width:42px;height:42px;border-radius:12px;flex:0 0 auto;display:grid;place-items:center;
+  background:var(--black);color:#fff;box-shadow:var(--shadow-sm)}
+.brand .logo svg{width:23px;height:23px}
+.brand b{font-family:var(--font-display);font-weight:600;font-size:16px;letter-spacing:.5px;text-transform:uppercase;color:var(--ink);display:block;line-height:1.15}
+.brand span{font-size:11.5px;color:var(--muted);letter-spacing:.4px}
+
+.nav-group{margin-top:16px}
+.nav-group>p{font-family:var(--font-display);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--accent-ink);margin:0 0 6px;padding:0 10px;font-weight:600}
+.nav a{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:9px;color:var(--text);
+  font-size:14px;font-weight:400;transition:.15s var(--ease);border:1px solid transparent}
+.nav a .dot{width:6px;height:6px;border-radius:50%;background:var(--border);flex:0 0 auto;transition:.15s}
+.nav a:hover{background:var(--bg-soft);color:var(--ink);text-decoration:none}
+.nav a.active{background:var(--accent-soft);color:var(--ink);font-weight:500}
+.nav a.active .dot{background:var(--accent);box-shadow:0 0 0 3px rgba(48,185,116,.2)}
+
+.main{flex:1;min-width:0}
+.content{max-width:var(--maxw);margin:0 auto;padding:0 30px 130px}
+
+.topbar{display:none;position:sticky;top:0;z-index:60;align-items:center;gap:12px;padding:11px 16px;
+  background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+.icon-btn{display:inline-grid;place-items:center;width:42px;height:42px;border-radius:11px;background:var(--bg);
+  border:1px solid var(--border);color:var(--ink);cursor:pointer;transition:.15s}
+.icon-btn:hover{background:var(--bg-soft)}
+.icon-btn svg{width:20px;height:20px}
+.scrim{display:none;position:fixed;inset:0;background:rgba(20,30,25,.4);z-index:55}
+.reading{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:90;transition:width .1s linear}
+
+/* ============ Hero ============ */
+.hero{padding:60px 0 26px;display:grid;grid-template-columns:1.05fr .95fr;gap:30px;align-items:center}
+.kicker{display:inline-flex;align-items:center;gap:9px;font-family:var(--font-mono);font-size:12px;
+  color:var(--accent-ink);background:var(--accent-soft);padding:6px 13px;border-radius:999px;letter-spacing:.03em;margin-bottom:18px}
+.kicker .pulse{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2.2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(48,185,116,.5)}70%{box-shadow:0 0 0 9px rgba(48,185,116,0)}100%{box-shadow:0 0 0 0 rgba(48,185,116,0)}}
+.hero h1{font-family:var(--font-display);font-weight:600;text-transform:uppercase;letter-spacing:.5px;
+  font-size:clamp(34px,5.2vw,60px);line-height:1.04;margin:0 0 10px;color:var(--ink)}
+.hero h1 .g{color:var(--accent-ink)}
+.hero .sub{font-family:var(--font-display);font-weight:300;font-size:clamp(17px,2.4vw,22px);color:var(--ink);margin:0 0 18px;letter-spacing:.5px}
+.hero .lead{font-size:16.5px;color:var(--text);max-width:54ch;margin:0 0 24px}
+.hero-art{display:flex;justify-content:center}
+.hero-art svg{width:100%;max-width:440px;height:auto}
+
+.lecturer{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:13px 16px;border-radius:var(--radius);
+  background:var(--bg);border:1px solid var(--border);box-shadow:var(--shadow-sm);max-width:520px}
+.lecturer .av{width:44px;height:44px;border-radius:50%;background:var(--black);color:#fff;
+  display:grid;place-items:center;font-family:var(--font-display);font-weight:600;flex:0 0 auto}
+.lecturer .meta b{font-size:15px;color:var(--ink)}
+.lecturer .meta span{color:var(--muted);display:block;font-size:13px}
+.edit-hint{font-size:11px;color:var(--faint);margin-left:auto;font-family:var(--font-mono)}
+
+.hero-stats{display:flex;gap:26px;margin-top:22px;flex-wrap:wrap}
+.hero-stats div b{font-family:var(--font-display);font-weight:600;font-size:30px;color:var(--accent-ink);display:block;line-height:1}
+.hero-stats div span{font-size:12.5px;color:var(--muted)}
+
+/* ============ Sections ============ */
+section{padding-top:58px;scroll-margin-top:24px}
+.sec-head{position:relative;margin-bottom:22px}
+.sec-num{position:absolute;right:0;top:-22px;font-family:var(--font-display);font-weight:700;font-size:90px;
+  line-height:1;color:var(--accent-soft);z-index:0;pointer-events:none;letter-spacing:-2px}
+.sec-tag{font-family:var(--font-mono);font-size:12px;color:var(--accent-ink);letter-spacing:.08em;position:relative;z-index:1}
+.sec-head h2{font-family:var(--font-display);font-weight:600;text-transform:uppercase;letter-spacing:.5px;
+  font-size:clamp(26px,4vw,40px);margin:4px 0 6px;position:relative;z-index:1;line-height:1.08}
+.sec-sub{color:var(--muted);margin:0;font-size:16px;position:relative;z-index:1}
+
+.content h3{font-family:var(--font-display);font-weight:500;font-size:22px;margin:34px 0 10px;color:var(--ink);letter-spacing:.3px}
+.content h4{font-size:16.5px;margin:22px 0 8px;color:var(--ink);font-weight:600}
+.content p{margin:0 0 14px}
+.content ul,.content ol{margin:0 0 16px;padding-left:22px}
+.content li{margin:6px 0}
+.content li::marker{color:var(--accent)}
+hr{border:none;border-top:1px solid var(--border);margin:50px 0}
+.lead-in{font-size:18px;color:var(--ink);font-weight:300}
+
+/* Cards & grids */
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow-sm)}
+.grid{display:grid;gap:16px}
+.grid.c2{grid-template-columns:repeat(2,1fr)}
+.grid.c3{grid-template-columns:repeat(3,1fr)}
+.feature{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
+.feature .ic{width:42px;height:42px;border-radius:11px;background:var(--accent-soft);color:var(--accent-ink);display:grid;place-items:center;margin-bottom:12px}
+.feature .ic svg{width:22px;height:22px}
+.feature h4{margin:0 0 4px}
+.feature p{margin:0;font-size:14px;color:var(--muted)}
+
+/* Callouts */
+.callout{display:flex;gap:14px;border-radius:var(--radius);padding:16px 18px;margin:18px 0;border:1px solid var(--border);background:var(--bg-soft)}
+.callout .ic{flex:0 0 auto;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:#fff}
+.callout .ic svg{width:17px;height:17px}
+.callout .bd{font-size:15px}
+.callout .bd b{display:block;margin-bottom:2px;color:var(--ink);font-weight:600}
+.callout p{margin:0;color:var(--text)}
+.callout.tip{background:var(--accent-soft);border-color:#bfeed6}.callout.tip .ic{background:var(--accent)}
+.callout.info{background:var(--info-soft);border-color:#cfe3fb}.callout.info .ic{background:var(--info)}
+.callout.warn{background:var(--warn-soft);border-color:#f3e2b8}.callout.warn .ic{background:var(--warn)}
+.callout.danger{background:var(--danger-soft);border-color:#f3cccc}.callout.danger .ic{background:var(--danger)}
+
+/* Prompt block */
+.prompt{margin:16px 0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--code-bd);background:var(--code-bg);box-shadow:var(--shadow-sm)}
+.prompt .ph{display:flex;align-items:center;gap:9px;padding:9px 14px;background:rgba(255,255,255,.05);border-bottom:1px solid var(--code-bd)}
+.prompt .ph .dots{display:flex;gap:6px}
+.prompt .ph .dots i{width:10px;height:10px;border-radius:50%;display:block}
+.prompt .ph .dots i:nth-child(1){background:#ff5f57}.prompt .ph .dots i:nth-child(2){background:#febc2e}.prompt .ph .dots i:nth-child(3){background:#28c840}
+.prompt .ph .tag{font-family:var(--font-mono);font-size:11.5px;color:#9fc6b3;letter-spacing:.03em;display:flex;align-items:center;gap:7px}
+.prompt .ph .tag svg{width:14px;height:14px}
+.copy-btn{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11.5px;
+  color:#cfe7da;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:5px 10px;cursor:pointer;transition:.15s}
+.copy-btn:hover{background:rgba(48,185,116,.25);color:#e8fff3;border-color:rgba(48,185,116,.5)}
+.copy-btn svg{width:13px;height:13px}.copy-btn.done{color:#86efac}
+.prompt pre{margin:0;padding:16px 18px;overflow-x:auto}
+.prompt code{font-family:var(--font-mono);font-size:13.5px;line-height:1.7;color:#dcebe2;color:#d7ecdf;white-space:pre-wrap;word-break:break-word}
+.prompt .you{color:#8fe3c0}.prompt .cmt{color:#5e7d6e;font-style:italic}
+code.inline{font-family:var(--font-mono);font-size:.85em;background:var(--bg-soft);border:1px solid var(--border);padding:1.5px 6px;border-radius:6px;color:var(--ink)}
+
+/* Tables */
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);margin:18px 0;box-shadow:var(--shadow-sm)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14.5px}
+th,td{text-align:left;padding:13px 16px;border-bottom:1px solid var(--border-soft);vertical-align:top}
+thead th{background:var(--bg-mint);font-family:var(--font-display);font-weight:500;color:var(--ink);text-transform:uppercase;letter-spacing:.04em;font-size:13px;position:sticky;top:0}
+tbody tr:hover{background:var(--bg-soft)}
+tbody tr:last-child td{border-bottom:none}
+td b{color:var(--accent-ink)}
+.role td:first-child{font-weight:600;color:var(--ink);white-space:nowrap}
+
+/* Steps */
+.steps{counter-reset:step;display:grid;gap:14px;margin:18px 0}
+.step{position:relative;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px 18px 62px;box-shadow:var(--shadow-sm)}
+.step::before{counter-increment:step;content:counter(step);position:absolute;left:16px;top:17px;width:32px;height:32px;border-radius:10px;
+  background:var(--accent);color:#fff;font-family:var(--font-display);font-weight:600;display:grid;place-items:center;font-size:16px}
+.step h4{margin:0 0 6px;font-size:16px}
+.step p{margin:0;font-size:14.5px;color:var(--text)}
+
+/* Lab banner */
+.lab-banner{display:flex;flex-wrap:wrap;gap:18px;align-items:center;background:var(--bg-mint);border:1px solid #c7eed9;
+  border-radius:var(--radius-lg);padding:22px;margin-bottom:8px}
+.lab-art{flex:0 0 auto;width:96px;height:96px}
+.lab-art svg{width:96px;height:96px}
+.lab-banner .meta{flex:1;min-width:220px}
+.lab-banner .meta h3{font-family:var(--font-display);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin:0 0 4px;font-size:24px;color:var(--ink)}
+.lab-banner .meta p{margin:0;color:var(--text);font-size:14.5px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
+.chip{font-family:var(--font-mono);font-size:11px;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:4px 11px}
+.chip.t{color:var(--accent-ink);border-color:#bfeed6;background:var(--accent-soft)}
+
+/* download button */
+.dl{display:inline-flex;align-items:center;gap:7px;font-family:var(--font-body);font-weight:500;font-size:13.5px;color:var(--accent-ink);background:var(--bg);border:1.5px solid var(--accent);border-radius:9px;padding:8px 14px;transition:.15s;cursor:pointer;text-decoration:none}
+.dl:hover{background:var(--accent);color:#fff;text-decoration:none}
+.dl svg{width:15px;height:15px;flex:0 0 auto}
+.dl.pending{color:var(--faint);border-color:var(--border);cursor:not-allowed;background:var(--bg-soft)}
+.dl.pending:hover{background:var(--bg-soft);color:var(--faint)}
+/* case cards */
+.case-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.casecard{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column}
+.casecard .dept{display:inline-flex;align-items:center;gap:7px;font-family:var(--font-mono);font-size:11px;color:var(--accent-ink);background:var(--accent-soft);border-radius:999px;padding:3px 11px;align-self:flex-start;margin-bottom:9px;letter-spacing:.03em}
+.casecard h4{margin:0 0 4px;font-size:16px}
+.casecard p{margin:0 0 10px;font-size:13.5px;color:var(--muted)}
+.casecard code{font-family:var(--font-mono);font-size:12px;background:var(--code-bg);color:#d7ecdf;border-radius:8px;padding:10px 12px;display:block;white-space:pre-wrap;line-height:1.55;margin-bottom:12px}
+.casecard .dl{margin-top:auto;align-self:flex-start}
+@media(max-width:980px){.case-grid{grid-template-columns:1fr}}
+
+/* tool logo chips */
+.toolrow{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+.toolpill{display:flex;align-items:center;gap:9px;background:var(--bg);border:1px solid var(--border);border-radius:11px;padding:9px 13px;box-shadow:var(--shadow-sm)}
+.toolpill .b{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-family:var(--font-display);font-weight:600;font-size:14px;flex:0 0 auto}
+.toolpill b{font-size:14px;color:var(--ink);display:block;line-height:1.1}
+.toolpill span{font-size:11.5px;color:var(--muted)}
+
+/* cheat */
+.cheat{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow-sm)}
+.cheat h4{margin:0 0 8px;display:flex;align-items:center;gap:8px}
+.cheat h4 svg{width:16px;height:16px;color:var(--accent-ink)}
+.cheat code{font-family:var(--font-mono);font-size:12.5px;display:block;background:var(--code-bg);color:#d7ecdf;border-radius:9px;padding:11px 13px;white-space:pre-wrap;line-height:1.6}
+
+/* footer */
+.foot{border-top:1px solid var(--border);margin-top:64px;padding:30px 0 8px;color:var(--muted);font-size:13.5px}
+.foot .row{display:flex;flex-wrap:wrap;gap:18px;justify-content:space-between;align-items:flex-end}
+.foot b{color:var(--ink);font-family:var(--font-display);text-transform:uppercase;letter-spacing:.5px}
+
+/* responsive */
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:60;transform:translateX(-100%);transition:transform .25s var(--ease);box-shadow:30px 0 60px -30px rgba(0,0,0,.4)}
+  body.nav-open .sidebar{transform:translateX(0)} body.nav-open .scrim{display:block}
+  .topbar{display:flex}
+  .hero{grid-template-columns:1fr;gap:18px;padding:28px 0 14px}
+  .hero-art{order:-1;max-width:340px;margin:0 auto}
+  .grid.c2,.grid.c3{grid-template-columns:1fr}
+  .content{padding:0 18px 90px}
+  .sec-num{font-size:64px;top:-14px}
+}
+@media(max-width:520px){body{font-size:16px}.reading{display:none}.hero-stats{gap:18px}}
+</style>
+</head>
+<body>
+<div class="reading" id="reading"></div>
+
+<div class="topbar">
+  <button class="icon-btn" id="menuBtn" aria-label="開啟選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  <b style="font-family:var(--font-display);text-transform:uppercase;letter-spacing:.5px;font-size:15px;color:var(--ink)">Vibe Coding 講義</b>
+</div>
+<div class="scrim" id="scrim"></div>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg></span>
+      <span><b>用 AI 工作</b><span>DIS Tech · 湖口 Workshop</span></span>
+    </div>
+    <nav class="nav" aria-label="章節導覽">
+      <div class="nav-group"><p>開始</p>
+        <a href="#hero" class="active"><span class="dot"></span>關於這堂課</a>
+        <a href="#agenda"><span class="dot"></span>課程地圖</a>
+      </div>
+      <div class="nav-group"><p>觀念篇</p>
+        <a href="#ch1"><span class="dot"></span>1 · 什麼是 Vibe Coding</a>
+        <a href="#ch2"><span class="dot"></span>2 · 認識 AI Agent</a>
+        <a href="#ch3"><span class="dot"></span>3 · 工具全景圖</a>
+      </div>
+      <div class="nav-group"><p>上手篇</p>
+        <a href="#ch4"><span class="dot"></span>4 · 第一次上手</a>
+        <a href="#ch5"><span class="dot"></span>5 · 下指令的心法</a>
+        <a href="#ch6"><span class="dot"></span>6 · 盤點重複性工作</a>
+      </div>
+      <div class="nav-group"><p>實戰篇</p>
+        <a href="#lab1"><span class="dot"></span>練習 1 · 名片與客戶資料</a>
+        <a href="#lab2"><span class="dot"></span>練習 2 · 競品與產品差異</a>
+        <a href="#lab3"><span class="dot"></span>練習 3 · 用 AI 做簡報</a>
+        <a href="#lab4"><span class="dot"></span>練習 4 · NotebookLM</a>
+      </div>
+      <div class="nav-group"><p>更多應用</p>
+        <a href="#cases"><span class="dot"></span>各部門範例案例</a>
+        <a href="#connect"><span class="dot"></span>連上你的工具</a>
+        <a href="#files"><span class="dot"></span>範例檔下載中心</a>
+      </div>
+      <div class="nav-group"><p>收尾篇</p>
+        <a href="#ch7"><span class="dot"></span>7 · 安全與界線</a>
+        <a href="#ch8"><span class="dot"></span>8 · 養成習慣</a>
+        <a href="#cheat"><span class="dot"></span>速查表</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="content">
+
+      <!-- HERO -->
+      <header class="hero" id="hero">
+        <div>
+          <span class="kicker"><span class="pulse"></span>新手友善 · 不用會寫程式</span>
+          <h1>用 AI<br><span class="g">一起工作</span></h1>
+          <p class="sub">Vibe Coding & AI Agent 實戰</p>
+          <p class="lead">這份教材帶你從零認識 <strong>Vibe Coding</strong>，以及 <strong>Claude Code、Codex、Antigravity、NotebookLM</strong> 這類 AI 工具，怎麼幫你完成日常工作——整理名片與客戶、分析競爭對手、釐清產品差異、用 AI 做簡報。你只要會「講清楚要什麼」，剩下交給 AI。</p>
+          <div class="lecturer">
+            <div class="av">DT</div>
+            <div class="meta"><b>講師：＿＿＿＿＿</b><span>主題分享 · DIS Tech 湖口辦公室</span></div>
+            <span class="edit-hint">← 換成你的名字</span>
+          </div>
+          <div class="hero-stats">
+            <div><b>0</b><span>需要的程式基礎</span></div>
+            <div><b>4</b><span>個動手實戰</span></div>
+            <div><b>5</b><span>大 AI 工具</span></div>
+          </div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <!-- Probe card / wafer + AI hub schematic -->
+          <svg viewBox="0 0 440 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="半導體測試介面與 AI 示意圖">
+            <defs>
+              <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#e9fbf3"/><stop offset="1" stop-color="#cdeede"/>
+              </linearGradient>
+              <radialGradient id="g2" cx="50%" cy="45%" r="60%">
+                <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e9fbf3"/>
+              </radialGradient>
+            </defs>
+            <rect x="8" y="8" width="424" height="384" rx="22" fill="url(#g1)"/>
+            <!-- wafer -->
+            <circle cx="150" cy="200" r="118" fill="url(#g2)" stroke="#30b974" stroke-width="2"/>
+            <circle cx="150" cy="200" r="92" fill="none" stroke="#67bd92" stroke-width="1" stroke-dasharray="3 5" opacity=".8"/>
+            <circle cx="150" cy="200" r="62" fill="none" stroke="#67bd92" stroke-width="1" stroke-dasharray="3 5" opacity=".7"/>
+            <!-- notch -->
+            <path d="M150 82 l10 16 h-20 z" fill="#30b974"/>
+            <!-- probe dot grid -->
+            <g fill="#15805a">
+              <circle cx="120" cy="160" r="4"/><circle cx="150" cy="160" r="4"/><circle cx="180" cy="160" r="4"/>
+              <circle cx="105" cy="185" r="4"/><circle cx="135" cy="185" r="4"/><circle cx="165" cy="185" r="4"/><circle cx="195" cy="185" r="4"/>
+              <circle cx="120" cy="210" r="4"/><circle cx="150" cy="210" r="4"/><circle cx="180" cy="210" r="4"/>
+              <circle cx="105" cy="235" r="4"/><circle cx="135" cy="235" r="4"/><circle cx="165" cy="235" r="4"/><circle cx="195" cy="235" r="4"/>
+              <circle cx="120" cy="260" r="4"/><circle cx="150" cy="260" r="4"/><circle cx="180" cy="260" r="4"/>
+            </g>
+            <g fill="#f4b740">
+              <circle cx="150" cy="185" r="4.5"/><circle cx="135" cy="210" r="4.5"/><circle cx="165" cy="210" r="4.5"/><circle cx="150" cy="235" r="4.5"/>
+            </g>
+            <!-- connecting traces to AI hub -->
+            <g stroke="#343a40" stroke-width="1.6" fill="none" opacity=".55">
+              <path d="M268 200 H322"/><path d="M250 150 C300 150 300 130 348 130"/><path d="M250 250 C300 250 300 280 348 280"/>
+            </g>
+            <!-- chips -->
+            <rect x="322" y="184" width="36" height="32" rx="5" fill="#fff" stroke="#343a40" stroke-width="1.6"/>
+            <rect x="348" y="112" width="40" height="34" rx="5" fill="#fff" stroke="#343a40" stroke-width="1.6"/>
+            <rect x="348" y="262" width="40" height="34" rx="5" fill="#fff" stroke="#343a40" stroke-width="1.6"/>
+            <g stroke="#9aa4ad" stroke-width="1.4">
+              <path d="M322 192 h-6 M322 200 h-6 M322 208 h-6"/>
+            </g>
+            <!-- AI hub node -->
+            <circle cx="358" cy="200" r="30" fill="#15181c"/>
+            <g stroke="#30b974" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M366 192 l5 8 -5 8"/><path d="M350 192 l-5 8 5 8"/><path d="M361 188 l-6 24"/>
+            </g>
+            <circle cx="358" cy="200" r="30" fill="none" stroke="#67bd92" stroke-width="1" stroke-dasharray="2 4"/>
+          </svg>
+        </div>
+      </header>
+
+      <!-- AGENDA -->
+      <section id="agenda">
+        <div class="sec-head"><span class="sec-num">00</span><span class="sec-tag">// ROADMAP</span><h2>課程地圖</h2><p class="sec-sub">不用緊張，每一段都有白話解釋與實際示範。</p></div>
+        <div class="grid c3">
+          <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><h4>① 建立觀念</h4><p>搞懂 Vibe Coding、AI Agent，以及各種工具的定位。</p></div>
+          <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div><h4>② 學會下指令</h4><p>上手三步驟、好指令公式，並盤點你的重複性工作。</p></div>
+          <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div><h4>③ 動手做四個練習</h4><p>名片整理、競品分析、產品差異、用 AI 做簡報。</p></div>
+        </div>
+        <div class="callout tip"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.6 1 1.5 1 2.3h6c0-.8.4-1.7 1-2.3A7 7 0 0 0 12 2z"/></svg></span><div class="bd"><b>怎麼用這份講義</b><p>左側選單可隨時跳章節；每個深色框是「可直接複製貼給 AI」的指令範本（右上角有複製鍵）。建議邊聽邊在自己電腦上跟著做一次。</p></div></div>
+      </section>
+
+      <hr/>
+
+      <!-- CH1 -->
+      <section id="ch1">
+        <div class="sec-head"><span class="sec-num">01</span><span class="sec-tag">// 觀念篇</span><h2>什麼是 Vibe Coding</h2><p class="sec-sub">一句話：用「講人話」描述你要的結果，讓 AI 幫你做出來。</p></div>
+        <p class="lead-in">過去要讓電腦做事，你得會「電腦的語言」——程式碼、公式、指令。<strong>Vibe Coding</strong> 把它反過來：你用自然語言說出想要什麼，AI 負責把它變成可運作的東西。你的工作從「會不會寫」，變成「<strong>會不會把問題講清楚、並判斷結果好不好</strong>」。</p>
+        <div class="callout info"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span><div class="bd"><b>名詞由來</b><p>「Vibe coding」一詞 2025 年由 AI 科學家 Andrej Karpathy 提出，意思是「跟著感覺走、用對話一步步把東西做出來」。</p></div></div>
+        <h3>用 DIS Tech 的語言來比喻</h3>
+        <p>想像你要一片能測某顆 IC 的測試板。<strong>傳統做法</strong>像是你親自畫每條 trace、排每個 pad；<strong>Vibe Coding</strong> 則像你身邊多了一位很強的工程助理：</p>
+        <ul>
+          <li>你說：「我要一塊能測這顆晶片的介面板，pitch 大概這樣，先給我一版。」</li>
+          <li>助理先做一版 → 你說「這裡訊號完整性再好一點」→ 它再改一版。</li>
+          <li>你專注在「判斷對不對、要什麼」，繁瑣執行交給它。</li>
+        </ul>
+        <div class="grid c2">
+          <div class="card"><h4 style="color:var(--muted)">以前重要的是…</h4><ul style="margin:0"><li>記得語法、指令、函式</li><li>會操作特定軟體</li><li>從頭手工做每一步</li></ul></div>
+          <div class="card" style="border-color:#bfeed6;background:var(--accent-soft)"><h4 style="color:var(--accent-ink)">現在重要的是…</h4><ul style="margin:0"><li>把需求＆情境描述清楚</li><li>判斷 AI 結果好不好</li><li>用對話一次次修到對</li></ul></div>
+        </div>
+        <div class="callout tip"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><div class="bd"><b>重點帶走</b><p>Vibe Coding 不是「取代你」，而是把你變成「指揮者」。你越懂自己的工作、越會描述需求，AI 做出來的東西就越好。</p></div></div>
+      </section>
+
+      <hr/>
+
+      <!-- CH2 -->
+      <section id="ch2">
+        <div class="sec-head"><span class="sec-num">02</span><span class="sec-tag">// 觀念篇</span><h2>認識 AI Agent</h2><p class="sec-sub">會「聊天」的 AI，和會「動手做事」的 AI，差很多。</p></div>
+        <p class="lead-in">你大概用過 ChatGPT 這類聊天 AI——你問問題，它回你一段文字。<strong>AI Agent（智慧代理）</strong>更進一步：它不只回答，還能<strong>實際動手</strong>——讀你的檔案、建立新檔、上網查資料、執行工具、一步步把任務做完，做錯還會自己修正。</p>
+        <div class="grid c2">
+          <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg></div><h4>聊天 AI ＝ 顧問</h4><p>給你口頭建議：「你應該把名單去重、再分類。」——然後你得自己動手。</p></div>
+          <div class="feature" style="border-color:#bfeed6"><div class="ic" style="background:var(--accent);color:#fff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div><h4>AI Agent ＝ 實習生</h4><p>真的坐到你電腦前，把名單去重、分類、產出乾淨表格交給你。你只要驗收。</p></div>
+        </div>
+        <h3>Agent 是怎麼工作的</h3>
+        <div class="table-wrap"><table><thead><tr><th>步驟</th><th>它在做什麼</th><th>白話比喻</th></tr></thead><tbody>
+          <tr><td><b>理解</b></td><td>讀懂任務和你給的資料</td><td>聽懂你要什麼</td></tr>
+          <tr><td><b>規劃</b></td><td>把大任務拆成小步驟</td><td>列出待辦清單</td></tr>
+          <tr><td><b>行動</b></td><td>讀檔、查資料、計算、產檔</td><td>動手做事</td></tr>
+          <tr><td><b>檢查</b></td><td>看結果對不對</td><td>自己對答案</td></tr>
+          <tr><td><b>修正／交付</b></td><td>有問題就改，沒問題就交件</td><td>交給你驗收</td></tr>
+        </tbody></table></div>
+        <div class="callout info"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span><div class="bd"><b>所以重點是…</b><p>Agent 能「碰到你的東西」（檔案、資料、工具），這是它強大的原因，也是為什麼第 7 章「安全與界線」很重要。</p></div></div>
+      </section>
+
+      <hr/>
+
+      <!-- CH3 -->
+      <section id="ch3">
+        <div class="sec-head"><span class="sec-num">03</span><span class="sec-tag">// 觀念篇</span><h2>工具全景圖</h2><p class="sec-sub">名字很多，先看懂它們各自擅長什麼，再選一個開始。</p></div>
+        <p class="lead-in">市面工具分兩大類：<strong>「會動手的 Agent」</strong>（能讀寫檔案、跑任務）和 <strong>「專精某件事的助手」</strong>（如把你的資料變問答庫、一鍵生簡報）。下面是這堂課會碰到的五個。</p>
+        <div class="toolrow">
+          <div class="toolpill"><span class="b" style="background:#d97757">cc</span><div><b>Claude Code</b><span>Anthropic · 全能 Agent</span></div></div>
+          <div class="toolpill"><span class="b" style="background:#10a37f">Cx</span><div><b>Codex</b><span>OpenAI · 編碼/任務 Agent</span></div></div>
+          <div class="toolpill"><span class="b" style="background:#4285f4">Ag</span><div><b>Antigravity</b><span>Google · Agent 開發環境</span></div></div>
+          <div class="toolpill"><span class="b" style="background:#ea4335">NL</span><div><b>NotebookLM</b><span>Google · 資料問答助理</span></div></div>
+          <div class="toolpill"><span class="b" style="background:#a259ff">Gm</span><div><b>Gamma</b><span>一鍵生成簡報</span></div></div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>工具</th><th>是什麼</th><th>最適合</th></tr></thead><tbody>
+          <tr><td><b>Claude Code</b><br><span style="color:var(--muted);font-size:12.5px">cc</span></td><td>在終端機／桌面／IDE 運作的 AI Agent，能讀寫電腦檔案、執行指令、處理長任務。</td><td>整理檔案、跑資料、做文件，全程可控。</td></tr>
+          <tr><td><b>Codex</b></td><td>OpenAI 的編碼／任務 Agent，有 CLI、雲端、IDE 版。</td><td>已在用 ChatGPT，想延伸到會動手的 agent。</td></tr>
+          <tr><td><b>Antigravity</b></td><td>Google 以 Agent 為核心的開發環境，AI 在專案裡主動規劃並完成任務。</td><td>喜歡圖形化 IDE、要 agent 管整個專案。</td></tr>
+          <tr><td><b>NotebookLM</b></td><td>上傳你的文件，它<strong>只根據這些資料</strong>回答、附出處，還能生摘要、FAQ、語音導讀。</td><td>大量 PDF/規格找答案、做內部知識庫。</td></tr>
+          <tr><td><b>Gamma</b> 等</td><td>輸入大綱或主題，一鍵生成可編輯的簡報。</td><td>快速把內容變成漂亮 PPT。</td></tr>
+        </tbody></table></div>
+        <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><div class="bd"><b>這個領域變很快</b><p>各家功能、價格、版本幾乎每月更新，本表是「概念定位」，實際以官方最新為準。重點是觀念與用法——工具會的事大同小異。</p></div></div>
+        <h3>新手怎麼選？</h3>
+        <ul><li><strong>跟著公司／團隊用的那個</strong>，能互相幫忙、共用範本。</li><li><strong>會動手的事</strong>（整理檔案、產檔）→ 找 Agent 類（cc / Codex / Antigravity）。</li><li><strong>找答案、做知識庫</strong> → NotebookLM；<strong>做簡報</strong> → Gamma 或第 9 頁的方法。</li></ul>
+      </section>
+
+      <hr/>
+
+      <!-- CH4 -->
+      <section id="ch4">
+        <div class="sec-head"><span class="sec-num">04</span><span class="sec-tag">// 上手篇</span><h2>第一次上手</h2><p class="sec-sub">先做好心理建設，再走三個步驟，你就上路了。</p></div>
+        <div class="callout tip"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.6 1 1.5 1 2.3h6c0-.8.4-1.7 1-2.3A7 7 0 0 0 12 2z"/></svg></span><div class="bd"><b>心理建設</b><p>你<strong>不需要</strong>會寫程式。你需要的能力是把工作講清楚——這件事你本來就在做（交辦同事、寫 email）。把 AI 當成反應很快、但需要你說明清楚的新同事。</p></div></div>
+        <h3>上手三步驟</h3>
+        <div class="steps">
+          <div class="step"><h4>打開工具，告訴它你要什麼</h4><p>不用想得太完美，先用一句話講出目標。它會問你問題或直接開始做。</p></div>
+          <div class="step"><h4>看結果，給回饋</h4><p>結果不完美很正常。直接說：「不錯，但請把日期改成西元、再加一欄『地區』。」</p></div>
+          <div class="step"><h4>重複到滿意為止</h4><p>一來一往幾次就會收斂。這個「對話迭代」就是 Vibe Coding 的核心。</p></div>
+        </div>
+        <h3>新手常見的三個卡點</h3>
+        <div class="grid c3">
+          <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><h4>「怕弄壞東西」</h4><p>先複製一份檔案、在測試資料夾裡做。原始檔不動就不怕。</p></div>
+          <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9h8M8 13h6M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><h4>「不知道講什麼」</h4><p>用第 5 章公式，或直接說「我想做 X，你需要我提供什麼？」</p></div>
+          <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div><h4>「看不懂回覆」</h4><p>直接回它：「請用白話、像對非技術同事一樣解釋一次。」</p></div>
+        </div>
+      </section>
+
+      <hr/>
+
+      <!-- CH5 -->
+      <section id="ch5">
+        <div class="sec-head"><span class="sec-num">05</span><span class="sec-tag">// 上手篇</span><h2>下指令的心法</h2><p class="sec-sub">同樣的 AI，指令好不好，結果天差地別。記住一個萬用公式。</p></div>
+        <h3>好指令的四要素</h3>
+        <div class="table-wrap"><table><thead><tr><th>要素</th><th>意思</th><th>例子</th></tr></thead><tbody>
+          <tr><td><b>情境 Context</b></td><td>你是誰、背景是什麼</td><td>「我是 DIS Tech 業務，有一份展會客戶名單。」</td></tr>
+          <tr><td><b>任務 Task</b></td><td>你要它做什麼</td><td>「幫我去重、補齊公司欄位、依地區分類。」</td></tr>
+          <tr><td><b>格式 Format</b></td><td>輸出要長怎樣</td><td>「輸出表格，欄位：公司、聯絡人、地區、產業。」</td></tr>
+          <tr><td><b>範例 Example</b></td><td>給個樣板（可選）</td><td>「像這樣：台積電 ｜ 王小明 ｜ 台灣 ｜ 晶圓代工」</td></tr>
+        </tbody></table></div>
+        <h3>爛指令 vs 好指令</h3>
+        <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">✕ 太模糊</span></div><pre><code><span class="you">幫我整理一下這個名單。</span>
+<span class="cmt"># AI 不知道「整理」是去重？排序？分類？格式也沒講。</span></code></pre></div>
+        <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">✓ 清楚可執行</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">我是 DIS Tech 業務，附上一份展會客戶名單（CSV）。
+請幫我：
+1) 移除重複的公司
+2) 統一公司名稱寫法（全形/半形、簡稱補全）
+3) 新增一欄「地區」（台灣 / 日本 / 美國 / 其他）
+輸出成乾淨表格，最後用 3 句話摘要這份名單的重點。</span></code></pre></div>
+        <h3>三個讓結果更好的小技巧</h3>
+        <ul>
+          <li><strong>讓它先說計畫再動手</strong>：加一句「先告訴我你打算怎麼做，我確認後再開始」。</li>
+          <li><strong>給它素材</strong>：把檔案、截圖、範例直接給它，比口頭描述準很多。</li>
+          <li><strong>用回饋迭代</strong>：「方向對，但第 2 點請改成……」——一次推進一點。</li>
+        </ul>
+        <div class="callout tip"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><div class="bd"><b>懶人版口訣</b><p><strong>「我是誰 → 我要什麼 → 給我什麼格式」</strong>。記住這三句，八成的指令就夠用了。</p></div></div>
+      </section>
+
+      <hr/>
+
+      <!-- CH6 -->
+      <section id="ch6">
+        <div class="sec-head"><span class="sec-num">06</span><span class="sec-tag">// 上手篇</span><h2>盤點重複性工作</h2><p class="sec-sub">最適合交給 AI 的，是「常做、有規則、花時間」的事。先找出你的。</p></div>
+        <p class="lead-in">很多人以為這些工具只給工程師用。其實它最擅長處理<strong>大量瑣碎、有規則、要花時間</strong>的文書與資料工作——而這正是各部門每天都在做的。先對照下表，找出你的「可外包清單」。</p>
+        <h3>重複性工作 × 適合的工具</h3>
+        <div class="table-wrap"><table><thead><tr><th>重複性工作</th><th>常見例子</th><th>適合的 AI 做法／工具</th></tr></thead><tbody>
+          <tr><td><b>文件撰寫</b></td><td>週報、會議記錄、e-mail、公告</td><td>聊天 AI（Claude、ChatGPT）／Copilot</td></tr>
+          <tr><td><b>資料整理</b></td><td>Excel 清理、名單去重、彙整多來源</td><td>Agent 類（Claude Code、Codex）能讀寫檔案</td></tr>
+          <tr><td><b>翻譯潤稿</b></td><td>中英對照、規格翻譯、信件潤飾</td><td>任何聊天 AI</td></tr>
+          <tr><td><b>摘要重點</b></td><td>長報告、長信、會議逐字稿</td><td>NotebookLM、Claude</td></tr>
+          <tr><td><b>資料問答</b></td><td>大量 PDF／規格／datasheet 找答案</td><td>NotebookLM（附出處）</td></tr>
+          <tr><td><b>簡報製作</b></td><td>月報、提案、教育訓練</td><td>Gamma、Copilot、Claude＋大綱（第 9 頁）</td></tr>
+          <tr><td><b>市場研究</b></td><td>競品調查、產業趨勢</td><td>能上網的 agent（Claude、ChatGPT）</td></tr>
+        </tbody></table></div>
+        <div class="callout info"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span><div class="bd"><b>挑任務的訣竅</b><p>找那種「每週都要花一兩小時、步驟差不多、但很煩」的事——那就是最好的第一個練習對象。接下來四個實戰，就是這類任務的代表。</p></div></div>
+        <h3>對照各角色</h3>
+        <div class="table-wrap"><table class="role"><thead><tr><th>角色</th><th>可以交給 AI 的事</th></tr></thead><tbody>
+          <tr><td>業務 / FAE</td><td>整理名片與客戶名單、會議轉行動項、跟進 email、競品比較、客戶簡報初稿</td></tr>
+          <tr><td>測試工程</td><td>分析測試 log、整理量測數據、datasheet 重點摘要、自動化重複步驟</td></tr>
+          <tr><td>硬體 / PCB</td><td>整理 BOM、規格比對、文件草稿、工程筆記轉報告</td></tr>
+          <tr><td>品質 / PM</td><td>清理 Excel 成報表、趨勢圖、週報彙整、風險清單追蹤</td></tr>
+          <tr><td>採購 / 供應鏈</td><td>供應商報價比較、交期追蹤表、多封郵件彙整成一張表</td></tr>
+          <tr><td>行政 / HR</td><td>流程文件、表單與公告、長文件懶人包、翻譯潤稿</td></tr>
+        </tbody></table></div>
+      </section>
+
+      <hr/>
+
+      <!-- LAB 1 -->
+      <section id="lab1">
+        <div class="sec-head"><span class="sec-num">07</span><span class="sec-tag">// 實戰篇 · 練習 01</span><h2 style="font-size:0;height:0;margin:0;padding:0;overflow:hidden">名片與客戶資料</h2></div>
+        <div class="lab-banner">
+          <div class="lab-art" aria-hidden="true"><svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="20" width="44" height="30" rx="4" fill="#fff" stroke="#343a40" stroke-width="2" transform="rotate(-8 30 35)"/><rect x="16" y="34" width="46" height="30" rx="4" fill="#e9fbf3" stroke="#30b974" stroke-width="2"/><circle cx="26" cy="44" r="5" fill="#67bd92"/><path d="M36 42h18M36 48h12" stroke="#15805a" stroke-width="2" stroke-linecap="round"/><path d="M66 50l8 8 14-16" fill="none" stroke="#30b974" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="meta"><h3>練習 1 · 名片與客戶資料</h3><p>把參展回來的一疊名片、加上各來源的潛在客戶，變成乾淨可用的清單與跟進名單。</p>
+            <div class="chips"><span class="chip t">難度：入門</span><span class="chip">約 15 分鐘</span><span class="chip">業務 / FAE / 行政</span></div>
+          </div>
+        </div>
+        <p style="margin-top:14px"><a class="dl" data-file="01" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="dltxt">下載範例檔 · 01_業務_客戶名單</span></a></p>
+        <h3>情境</h3>
+        <p>展會結束，你手上有一疊名片（用手機拍照／掃描），再加上 email 簽名、報名表收來的潛在客戶。問題是：寫法亂、有重複、有缺漏。今天用 AI 把它整理乾淨、並標出該優先跟進誰。</p>
+
+        <h4>① 名片 → 表格（用看得懂圖片的 AI）</h4>
+        <p>把名片拍成照片，丟給能讀圖的 AI（多模態），請它辨識成表格。指令範例：</p>
+        <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">＋ 附上名片照片</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">附上幾張名片照片。請幫我辨識並整理成表格，欄位：
+公司、姓名、職稱、email、電話、地址、備註。
+看不清楚或不確定的欄位請留空、不要猜。
+最後把無法判讀的名片列出來提醒我。</span></code></pre></div>
+
+        <h4>② 先用這份「髒資料」練合併（可直接複製）</h4>
+        <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>sample_customers.csv（虛構）</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code>公司,聯絡人,email,電話,備註
+台積電,王大明,daming@example.com,03-1234567,展會A 對 probe card 有興趣
+TSMC,David Wang,daming@example.com,,同一人 名片
+聯電 UMC,陳小華,, 0912345678,需要 FT board 報價
+ASE 日月光,Lin,lin@example.com,07-3456789,
+力成 Powertech,,info@pti.example,,封測廠
+京元電 KYEC,Allen Wu,allen@kyec.example, ,測試代工
+Samsung,Mr. Kim,kim@ss.example,+82-2-111,韓國 大客戶
+samsung electronics,金先生,kim@ss.example,,重複?
+Intel,J. Smith,jsmith@intel.example,,美國
+英特爾,,jsmith@intel.example,,同上</code></pre></div>
+        <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><div class="bd"><b>虛構練習資料</b><p>以上公司／人名純屬虛構、僅供示範。練習請用這份，<strong>不要</strong>把真實客戶資料貼進公開 AI 服務（見第 7 章）。</p></div></div>
+
+        <h4>③ 把這段指令貼給 AI</h4>
+        <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">給 AI 的指令</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">我是 DIS Tech 業務。附上一份展會客戶名單（CSV，很亂）。
+請幫我：
+1) 合併重複客戶（同公司中英文、或同 email 視為同一筆）
+2) 統一公司名稱，保留「中文名 + 英文／代號」
+3) 補一欄「地區」：台灣 / 韓國 / 美國 / 其他
+4) 補一欄「需求」：從備註判斷（probe card、FT board、封測…），判斷不出留空
+5) 補一欄「優先級」：依是否大客戶、需求是否明確，標 高/中/低
+email、電話清乾淨；缺漏留空不要猜。
+
+輸出：(A) 整理後的乾淨表格　(B) 3～5 句重點摘要（共幾家、地區分布、優先跟進誰）
+開始前先用一句話說你的整理計畫，我確認後再做。</span></code></pre></div>
+
+        <h4>④ 進階：把成果變更好用</h4>
+        <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">迭代追問</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">很好。再幫我：
+(1) 依「需求類型」分群，方便分配給對應 FAE
+(2) 幫每一家草擬一句客製的開場跟進訊息
+(3) 存成我能用 Excel 打開的檔案</span></code></pre></div>
+        <div class="callout tip"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><div class="bd"><b>學到的觀念</b><p>你沒寫任何程式，只是「清楚描述任務 + 指定格式 + 迭代追問」。同手法可套用到供應商清單、報名表、待辦彙整。</p></div></div>
+      </section>
+
+      <hr/>
+
+      <!-- LAB 2 -->
+      <section id="lab2">
+        <div class="sec-head"><span class="sec-num">08</span><span class="sec-tag">// 實戰篇 · 練習 02</span></div>
+        <div class="lab-banner">
+          <div class="lab-art" aria-hidden="true"><svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg"><rect x="14" y="50" width="14" height="30" rx="2" fill="#67bd92"/><rect x="34" y="38" width="14" height="42" rx="2" fill="#30b974"/><rect x="54" y="28" width="14" height="52" rx="2" fill="#15805a"/><path d="M14 24l16 6 18-10 20 6" fill="none" stroke="#343a40" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="14" cy="24" r="3" fill="#343a40"/><circle cx="68" cy="26" r="3" fill="#343a40"/></svg></div>
+          <div class="meta"><h3>練習 2 · 競品與產品差異</h3><p>研究 probe card / DIB 市場對手，產出比較表，並整理出「我方的產品區別性」。</p>
+            <div class="chips"><span class="chip t">難度：入門～進階</span><span class="chip">約 20 分鐘</span><span class="chip">業務 / PM / 策略</span></div>
+          </div>
+        </div>
+        <p style="margin-top:14px"><a class="dl" data-file="10" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="dltxt">下載範例檔 · 10_競品分析_範本</span></a></p>
+        <h3>情境</h3>
+        <p>DIS Tech 隸屬 Technoprobe 集團，做晶片測試介面（probe card、DIB／PIB、FT board）。主管想要一份「競爭對手快照 + 我方差異化賣點」，方便業務對話與市場判斷。我們讓 AI 來打底。</p>
+
+        <h4>① 要比較的對手（參考清單）</h4>
+        <div class="grid c3">
+          <div class="feature"><h4 style="margin:0">FormFactor</h4><p>美國，高效能 probe card 領導廠之一。</p></div>
+          <div class="feature"><h4 style="margin:0">MJC（日本麥克隆尼）</h4><p>Micronics Japan，vertical／MEMS 探卡。</p></div>
+          <div class="feature"><h4 style="margin:0">Technoprobe</h4><p>義大利集團（DIS Tech 母集團）。</p></div>
+          <div class="feature"><h4 style="margin:0">Accuprobe</h4><p>高精度探針元件與 probe card。</p></div>
+          <div class="feature"><h4 style="margin:0">Wentworth Labs</h4><p>cantilever／vertical／MEMS 探卡。</p></div>
+          <div class="feature"><h4 style="margin:0">其他</h4><p>JEM、Tplus… 可視市場再加。</p></div>
+        </div>
+
+        <h4>② 競品分析指令（建議用能上網的 agent）</h4>
+        <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">給 AI 的指令</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">我在半導體測試介面公司（probe card / DIB / FT board）負責市場研究。
+請做一份「競爭對手快照」，比較：
+FormFactor、Micronics Japan (MJC)、Technoprobe、Accuprobe、Wentworth Labs。
+每家整理：總部地區、主力產品線、技術特色（MEMS / vertical / cantilever）、
+鎖定客群或應用、公開可見的優勢與弱點。
+
+輸出：(A) 一張橫向比較表　(B) 每家 2～3 句重點短評　(C) 對我方業務最有用的 3 個觀察
+重要：每項資訊標註「有查到來源」或「推測」，沒把握請明說，不要編造數字。
+先給我研究計畫，我確認後再開始。</span></code></pre></div>
+
+        <h4>③ 產品區別性（我方差異化）</h4>
+        <p>競品表出來後，接著請 AI 幫你把「我方 vs 對手」的差異整理成業務能用的賣點：</p>
+        <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">迭代追問</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">根據上面分析，幫我整理「我方（Technoprobe 集團的 DIS Tech）的產品區別性」：
+(1) 我方 vs 對手 的差異化重點（如：turn-key 整合服務、在地設計支援、
+    集團垂直整合、交期與量產 readiness、總體成本 TCO）
+(2) 做成一張「差異點 → 對客戶的好處」對照表
+(3) 業務遇到客戶拿對手比價時，可用的 3 句差異化說法
+(4) 一頁式 SWOT 重點</span></code></pre></div>
+        <div class="callout danger"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><div class="bd"><b>務必人工查核</b><p>市場數字、規格、份額這類資訊，AI 可能「講得很自信卻是錯的」。對外使用前，務必由懂市場的同事核對來源。AI 負責打底，<strong>你負責定稿</strong>。</p></div></div>
+      </section>
+
+      <hr/>
+
+      <!-- LAB 3 -->
+      <section id="lab3">
+        <div class="sec-head"><span class="sec-num">09</span><span class="sec-tag">// 實戰篇 · 練習 03</span></div>
+        <div class="lab-banner">
+          <div class="lab-art" aria-hidden="true"><svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg"><rect x="12" y="18" width="60" height="40" rx="4" fill="#e9fbf3" stroke="#30b974" stroke-width="2"/><path d="M20 28h28M20 36h36M20 44h22" stroke="#15805a" stroke-width="2.4" stroke-linecap="round"/><path d="M42 64v8M30 78h24" stroke="#343a40" stroke-width="2.4" stroke-linecap="round"/><rect x="60" y="44" width="26" height="34" rx="4" fill="#fff" stroke="#343a40" stroke-width="2"/><path d="M66 52h14M66 58h14M66 64h9" stroke="#67bd92" stroke-width="2" stroke-linecap="round"/></svg></div>
+          <div class="meta"><h3>練習 3 · 用 AI 做簡報</h3><p>把一份內容（例如練習 2 的競品分析）快速變成一份可用的簡報。</p>
+            <div class="chips"><span class="chip t">難度：入門</span><span class="chip">約 15 分鐘</span><span class="chip">全部門</span></div>
+          </div>
+        </div>
+        <h3>三種做法，看你的情境選</h3>
+        <div class="table-wrap"><table><thead><tr><th>做法</th><th>怎麼做</th><th>適合</th></tr></thead><tbody>
+          <tr><td><b>A. AI 生大綱 → 貼進 PPT</b></td><td>讓聊天 AI 產出逐頁標題與要點，再貼進 PowerPoint / Google Slides 套版。</td><td>想保留公司模板、自己掌控版面。</td></tr>
+          <tr><td><b>B. 專用 AI 簡報工具</b></td><td>用 Gamma、Canva AI、PowerPoint Copilot、Google Slides 的 Gemini，輸入主題或大綱一鍵生成。</td><td>要快、要漂亮、不想排版。</td></tr>
+          <tr><td><b>C. Agent 直接產出檔案</b></td><td>用 Claude Code / Codex 直接生成 .pptx 檔。</td><td>進階；要批量或固定格式。</td></tr>
+        </tbody></table></div>
+
+        <h4>① 先請 AI 產出「簡報大綱」</h4>
+        <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">給 AI 的指令</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">把以下內容做成一份 8 頁的簡報大綱，給主管看的版本。
+主題：DIS Tech 競爭對手快照與我方差異化（貼上練習 2 的結果）
+
+每頁請給我：頁面標題、3～4 個條列要點、建議的圖表類型（如有）、一句講者備註。
+語氣專業精簡，重點先講。第 1 頁是結論摘要、最後一頁是行動建議。</span></code></pre></div>
+
+        <h4>② 兩個好用的延伸指令</h4>
+        <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">延伸</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">(1) 把這份大綱轉成可貼進 Gamma 的純文字格式（每頁用 --- 分隔）
+(2) 幫我把競品比較那頁的數據，建議一個最適合的圖表並說明為什麼</span></code></pre></div>
+        <div class="callout tip"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><div class="bd"><b>小提醒</b><p>AI 生的簡報是「很好的初稿」，不是定稿。數據、公司名稱、對外措辭，上台前一定要自己再看過一遍。</p></div></div>
+      </section>
+
+      <hr/>
+
+      <!-- LAB 4 -->
+      <section id="lab4">
+        <div class="sec-head"><span class="sec-num">10</span><span class="sec-tag">// 實戰篇 · 練習 04</span></div>
+        <div class="lab-banner">
+          <div class="lab-art" aria-hidden="true"><svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg"><rect x="18" y="14" width="40" height="52" rx="4" fill="#fff" stroke="#343a40" stroke-width="2"/><path d="M26 26h24M26 34h24M26 42h16" stroke="#9aa4ad" stroke-width="2" stroke-linecap="round"/><circle cx="62" cy="58" r="20" fill="#e9fbf3" stroke="#30b974" stroke-width="2"/><path d="M62 50v16M54 58h16" stroke="#15805a" stroke-width="3" stroke-linecap="round"/><circle cx="62" cy="58" r="20" fill="none" stroke="#67bd92" stroke-width="1" stroke-dasharray="2 4"/></svg></div>
+          <div class="meta"><h3>練習 4 · NotebookLM</h3><p>把你的規格、報告、教育文件，變成「只根據這些資料、附出處」的問答助理。</p>
+            <div class="chips"><span class="chip t">難度：入門</span><span class="chip">約 15 分鐘</span><span class="chip">工程 / 新人訓練 / 業務</span></div>
+          </div>
+        </div>
+        <p><a class="dl" data-file="11" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="dltxt">下載範例文件 · 11_NotebookLM_產品知識庫範例</span></a></p>
+        <h3>它跟一般聊天 AI 差在哪？</h3>
+        <p><strong>NotebookLM</strong> 是 Google 的研究助理，最大特點是：它<strong>只根據你上傳的資料</strong>回答，而且每個答案都會標出「出自哪份文件、哪一段」。這大幅降低「幻覺」，答案可追溯——很適合拿來做內部知識庫。</p>
+        <div class="grid c3">
+          <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><h4>上傳來源</h4><p>PDF、規格、datasheet、簡報、會議記錄、網頁。</p></div>
+          <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div><h4>提問附出處</h4><p>「我們的探卡在高頻測試的優勢？」答案會附引用段落。</p></div>
+          <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4"/></svg></div><h4>自動生成</h4><p>摘要、FAQ、學習指南，甚至 Podcast 式語音導讀。</p></div>
+        </div>
+
+        <h3>DIS Tech 可以這樣用</h3>
+        <div class="steps">
+          <div class="step"><h4>建立 Notebook、上傳來源</h4><p>把產品規格、技術白皮書、內部教育文件、常見問答丟進去。</p></div>
+          <div class="step"><h4>讓新人用「問」的方式上手</h4><p>新進工程師問：「DIB 和 probe card 差在哪？我們的 turn-key 流程是什麼？」即時得到有出處的答案。</p></div>
+          <div class="step"><h4>幫業務／FAE 快速備課</h4><p>問：「客戶問高頻應用，我們有哪些對應方案？」→ 產出重點＋出處，準備拜訪更快。</p></div>
+          <div class="step"><h4>一鍵生成教育素材</h4><p>讓它把一份厚規格生成「重點摘要」「FAQ」或「語音導讀」，當作訓練教材。</p></div>
+        </div>
+        <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><div class="bd"><b>上傳前先確認</b><p>上傳的是公司內部文件，請先確認公司資料政策與帳號方案（企業／教育版有不同的資料保護條款）。機密資料不要用個人帳號上傳。</p></div></div>
+      </section>
+
+      <hr/>
+
+      <!-- CASES -->
+      <section id="cases">
+        <div class="sec-head"><span class="sec-num">11</span><span class="sec-tag">// 更多應用</span><h2>各部門範例案例</h2><p class="sec-sub">每個案例都附一個可下載的範例檔，現場就能跟著做。</p></div>
+        <p class="lead-in">下面把常見的部門任務各做了一個<strong>虛構範例檔</strong>。挑一個跟你工作最像的，下載檔案、貼上對應指令，馬上體驗。（檔案清單見下方「範例檔下載中心」。）</p>
+        <div class="case-grid">
+          <div class="casecard"><span class="dept">採購</span><h4>供應商報價比價</h4><p>多家報價，幣別與交期格式都不一樣，要快速比出最划算的。</p><code>幫我把這份供應商報價：幣別統一換成台幣、交期統一成「天數」，做成比較表，標出每個料號最划算的供應商，並提醒交期過長的項目。</code><a class="dl" data-file="02" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="dltxt">下載 02_供應商報價</span></a></div>
+          <div class="casecard"><span class="dept">銷售</span><h4>業績彙整</h4><p>訂單明細有些「金額」沒填，也想看各地區、產品線的業績。</p><code>這份訂單明細有些「金額」沒填，請補算（數量×單價）並檢查有沒有對不起來的；接著依「地區」「產品線」「月份」彙整業績，列出前 3 大客戶。</code><a class="dl" data-file="03" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="dltxt">下載 03_訂單明細</span></a></div>
+          <div class="casecard"><span class="dept">PM</span><h4>專案進度週報</h4><p>任務清單狀態用語很亂，想抓出逾期、自動生週報。</p><code>這份任務清單狀態用語很亂。請統一狀態、找出「已逾期」（預計完成日已過但未完成）的任務，並幫我寫一份條列式的本週進度週報。</code><a class="dl" data-file="04" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="dltxt">下載 04_專案任務</span></a></div>
+          <div class="casecard"><span class="dept">製程</span><h4>良率分析</h4><p>一堆批號的測試數據，要算良率、找問題、看趨勢。</p><code>幫我算每個批號的良率（良品數÷投入數），找出良率低於 90% 的批號，用「主要不良」做一個 Pareto 排名，最後給我 3 點觀察。</code><a class="dl" data-file="05" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="dltxt">下載 05_測試良率</span></a></div>
+          <div class="casecard"><span class="dept">會計</span><h4>費用分類彙整</h4><p>報銷的「類別」有些空白，要自動歸類並彙整、抓異常。</p><code>這份報銷的「類別」有些是空的，請依項目自動歸類（交通、餐費、差旅、辦公、軟體、訓練…），再依類別和月份彙整金額，並標出金額異常偏高的項目。</code><a class="dl" data-file="06" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="dltxt">下載 06_費用報銷</span></a></div>
+          <div class="casecard"><span class="dept">品保</span><h4>客訴歸納</h4><p>客訴記錄要分類、排名、抓重點、擬回覆。</p><code>幫我把客訴記錄歸類（接觸不良、機構、訊號、交期、包裝…），做各類別次數排名，標出「高嚴重度且未結案」的，並各擬一句回覆客戶的草稿。</code><a class="dl" data-file="07" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="dltxt">下載 07_客訴記錄</span></a></div>
+          <div class="casecard"><span class="dept">倉儲</span><h4>補貨提醒</h4><p>盤點表想自動抓出低於安全庫存的料號做補貨清單。</p><code>幫我找出「現有庫存低於安全庫存」的料號，做成一張補貨清單（含缺口數量），並依類別分組。</code><a class="dl" data-file="08" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="dltxt">下載 08_庫存盤點</span></a></div>
+          <div class="casecard"><span class="dept">行政 / HR</span><h4>訓練追蹤</h4><p>教育訓練紀錄要算完成率、列未完成、提醒到期。</p><code>幫我算各部門教育訓練完成率，列出「未完成」名單，並把 90 天內證照到期的人提醒出來。</code><a class="dl" data-file="09" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="dltxt">下載 09_教育訓練</span></a></div>
+        </div>
+        <div class="callout info"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span><div class="bd"><b>提醒</b><p>業務客戶名單（練習 1）與競品分析（練習 2）也有範例檔。每份檔都是<strong>虛構資料</strong>，可安全用於練習。</p></div></div>
+      </section>
+
+      <hr/>
+
+      <!-- CONNECT -->
+      <section id="connect">
+        <div class="sec-head"><span class="sec-num">12</span><span class="sec-tag">// 更多應用</span><h2>連上你的工具</h2><p class="sec-sub">Agent 不只整理檔案——還能連上你的信箱、資料夾、行事曆等軟體。</p></div>
+        <p class="lead-in">像 Claude Code、Codex 這類 agent，除了讀寫檔案，還能透過<strong>連接器</strong>或 <strong>MCP</strong> 連到你常用的工具，把跨軟體的瑣事一起做掉。以下是三類最實用的。</p>
+
+        <h3>① 整理信件（Gmail / Outlook）</h3>
+        <p>把「收件匣地獄」交給 agent：分類、摘要、抓出待辦、草擬回覆。</p>
+        <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">給 AI 的指令</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">請連到我的信箱，幫我處理今天的未讀信：
+1) 依主題分類（客戶、供應商、內部、廣告）
+2) 每封用一句話摘要，標出需要我回覆或有期限的
+3) 把「需回覆」的整理成待辦清單（寄件者、事項、期限）
+先不要寄出任何東西，整理好給我看。</span></code></pre></div>
+
+        <h3>② 整理電腦資料夾</h3>
+        <p>檔案散落、命名混亂？讓 agent 依規則重新命名、歸類、找重複檔。</p>
+        <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">給 AI 的指令</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">這個資料夾很亂。請幫我：
+1) 列出所有檔案，依類型和日期分類
+2) 找出重複或命名不一致的檔
+3) 提一個「重新命名 + 分資料夾」的規則給我確認，確認後再動手
+請先在副本資料夾操作，不要動到原檔。</span></code></pre></div>
+
+        <h3>③ 透過 MCP 串接軟體（如 Google 行事曆）</h3>
+        <p><strong>MCP（Model Context Protocol）</strong>就像給 AI 的「萬用插座」——讓 agent 安全地連到外部軟體：Google 行事曆、Slack、Drive、資料庫、GitHub… 不必為每個軟體寫專屬程式。</p>
+        <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">行事曆指令</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">看我下週的 Google 行事曆，幫我：
+1) 整理出每天 30 分鐘以上的空檔
+2) 我要安排 3 場客戶拜訪，建議適合的時段
+3) 確認後幫我建立行事曆提醒</span></code></pre></div>
+        <div class="table-wrap"><table><thead><tr><th>串接對象</th><th>可以做的事</th></tr></thead><tbody>
+          <tr><td><b>Google 行事曆</b></td><td>查空檔、排會議、建立提醒</td></tr>
+          <tr><td><b>Gmail / Outlook</b></td><td>分類、摘要、草擬回覆、抓待辦</td></tr>
+          <tr><td><b>Slack / Teams</b></td><td>摘要頻道討論、整理結論</td></tr>
+          <tr><td><b>Drive / SharePoint</b></td><td>找檔、彙整文件、產出報告</td></tr>
+          <tr><td><b>資料庫 / 試算表</b></td><td>查詢、彙整、產生報表</td></tr>
+        </tbody></table></div>
+        <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><div class="bd"><b>連接前先想三件事</b><p>① 要先<strong>授權</strong>，且只授權需要的範圍；② 機密信件／資料注意公司政策；③ 會「寄出、刪除、修改」的動作，請讓它<strong>先給你確認</strong>再執行。</p></div></div>
+      </section>
+
+      <hr/>
+
+      <!-- FILES -->
+      <section id="files">
+        <div class="sec-head"><span class="sec-num">13</span><span class="sec-tag">// 更多應用</span><h2>範例檔下載中心</h2><p class="sec-sub">全部都是虛構練習檔，下載後即可跟著各章節操作。</p></div>
+        <div class="callout info"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span><div class="bd"><b>下載連結</b><p>點各列的「下載」會開啟該檔（Google 預覽頁，右上角可下載）；也可以 <a href="https://drive.google.com/drive/folders/1Xg3zzChtIrDLgdhPwCvY2RGRBBKogeO9" target="_blank" rel="noopener">開啟整個雲端資料夾</a> 一次取得全部 11 份。</p></div></div>
+        <div class="table-wrap"><table><thead><tr><th>#</th><th>部門</th><th>範例檔</th><th>練習重點</th><th>下載</th></tr></thead><tbody>
+          <tr><td>01</td><td>業務</td><td>客戶名單</td><td>去重 / 分類 / 優先級</td><td><a class="dl" data-file="01" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="dltxt">下載</span></a></td></tr>
+          <tr><td>02</td><td>採購</td><td>供應商報價</td><td>幣別換算 / 比價</td><td><a class="dl" data-file="02" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="dltxt">下載</span></a></td></tr>
+          <tr><td>03</td><td>銷售</td><td>訂單明細</td><td>補金額 / 業績彙整</td><td><a class="dl" data-file="03" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="dltxt">下載</span></a></td></tr>
+          <tr><td>04</td><td>PM</td><td>專案任務</td><td>逾期 / 週報</td><td><a class="dl" data-file="04" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="dltxt">下載</span></a></td></tr>
+          <tr><td>05</td><td>製程</td><td>測試良率</td><td>良率 / Pareto / 趨勢</td><td><a class="dl" data-file="05" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="dltxt">下載</span></a></td></tr>
+          <tr><td>06</td><td>會計</td><td>費用報銷</td><td>自動分類 / 彙整</td><td><a class="dl" data-file="06" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="dltxt">下載</span></a></td></tr>
+          <tr><td>07</td><td>品保</td><td>客訴記錄</td><td>歸類 / 回覆草稿</td><td><a class="dl" data-file="07" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="dltxt">下載</span></a></td></tr>
+          <tr><td>08</td><td>倉儲</td><td>庫存盤點</td><td>低庫存 / 補貨</td><td><a class="dl" data-file="08" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="dltxt">下載</span></a></td></tr>
+          <tr><td>09</td><td>行政 / HR</td><td>教育訓練</td><td>完成率 / 到期提醒</td><td><a class="dl" data-file="09" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="dltxt">下載</span></a></td></tr>
+          <tr><td>10</td><td>業務 / 市場</td><td>競品分析範本</td><td>填表 / 比較</td><td><a class="dl" data-file="10" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="dltxt">下載</span></a></td></tr>
+          <tr><td>11</td><td>知識庫</td><td>NotebookLM 範例文件</td><td>上傳問答</td><td><a class="dl" data-file="11" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="dltxt">下載</span></a></td></tr>
+        </tbody></table></div>
+      </section>
+
+      <hr/>
+
+      <!-- CH7 -->
+      <section id="ch7">
+        <div class="sec-head"><span class="sec-num">14</span><span class="sec-tag">// 收尾篇</span><h2>安全與界線</h2><p class="sec-sub">越強大的工具，越要懂得安全地用。這頁請務必記住。</p></div>
+        <div class="grid c2">
+          <div class="callout danger" style="margin:0"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><div class="bd"><b>不要外洩機密</b><p>客戶 NDA 資料、未公開設計、報價、員工個資，<strong>不要</strong>貼進公開 AI。先確認公司核可的工具與方案（企業版通常有資料保護條款）。</p></div></div>
+          <div class="callout warn" style="margin:0"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></span><div class="bd"><b>AI 會自信地犯錯</b><p>數字、規格、報價、來源都可能「看起來對、其實錯」（幻覺）。任何對外或重要輸出，<strong>一定要人工驗證</strong>。</p></div></div>
+          <div class="callout info" style="margin:0"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span><div class="bd"><b>在副本上操作</b><p>讓 agent 動檔案時，先複製一份、在測試資料夾裡做。原始資料永遠留底。</p></div></div>
+          <div class="callout tip" style="margin:0"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 7v6c0 5 3.5 7.5 8 9 4.5-1.5 8-4 8-9V7z"/><path d="m9 12 2 2 4-4"/></svg></span><div class="bd"><b>你是負責人</b><p>AI 是助手不是決策者。最終判斷、簽核、對外發布由人負責。把它當「很快的草稿機」。</p></div></div>
+        </div>
+        <div class="callout tip"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><div class="bd"><b>一句話原則</b><p>能公開講的、能自己驗證的，就放心用；機密的、要負責的，先確認政策、再人工把關。遇到不確定，問主管或 IT，不要先貼了再說。</p></div></div>
+      </section>
+
+      <hr/>
+
+      <!-- CH8 -->
+      <section id="ch8">
+        <div class="sec-head"><span class="sec-num">15</span><span class="sec-tag">// 收尾篇</span><h2>養成習慣</h2><p class="sec-sub">聽完不用就忘了。用三個小動作，把它變成每天的工具。</p></div>
+        <div class="steps">
+          <div class="step"><h4>本週挑一個「煩任務」交給 AI</h4><p>選你每週都做、又有點煩的事（整理表格、寫週報、彙整郵件）。做一次，感受差別。</p></div>
+          <div class="step"><h4>養成「先問 AI」的反射</h4><p>動手前先想：「這件事能不能先讓 AI 打個草稿？」久了會自然。</p></div>
+          <div class="step"><h4>建立團隊的指令範本庫</h4><p>把好用的指令存起來、和同事共用。團隊一起累積，效率才會放大。</p></div>
+        </div>
+        <div class="callout info"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span><div class="bd"><b>學習資源（官方 Getting Started 最穩）</b><p><a href="https://docs.anthropic.com/en/docs/claude-code" target="_blank" rel="noopener">Claude Code</a>　·　<a href="https://openai.com/codex" target="_blank" rel="noopener">OpenAI Codex</a>　·　<a href="https://antigravity.google" target="_blank" rel="noopener">Antigravity</a>　·　<a href="https://notebooklm.google.com" target="_blank" rel="noopener">NotebookLM</a>　·　<a href="https://gamma.app" target="_blank" rel="noopener">Gamma</a></p></div></div>
+      </section>
+
+      <hr/>
+
+      <!-- CHEAT -->
+      <section id="cheat">
+        <div class="sec-head"><span class="sec-num">16</span><span class="sec-tag">// APPENDIX</span><h2>速查表</h2><p class="sec-sub">把這頁存起來。需要時改幾個字就能用。</p></div>
+        <div class="grid c2">
+          <div class="cheat"><h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>整理 / 清資料</h4><code>我附上一份[資料]。請去除重複、統一格式、補上[欄位]，輸出乾淨表格，最後用幾句話摘要重點。</code></div>
+          <div class="cheat"><h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>名片辨識</h4><code>附上名片照片。辨識成表格：公司、姓名、職稱、email、電話、地址。不確定的留空，最後列出讀不清的。</code></div>
+          <div class="cheat"><h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>研究 / 比較</h4><code>請比較 [A、B、C]，從[面向]整理成比較表，標註查證或推測，最後給我 3 個重點觀察。</code></div>
+          <div class="cheat"><h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>做簡報</h4><code>把以下內容做成 [N] 頁簡報大綱：每頁標題、3-4 要點、建議圖表、一句講者備註。第一頁結論先講。</code></div>
+          <div class="cheat"><h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 21V9"/></svg>摘要 / 重點化</h4><code>把這份[長文件/會議記錄]整理成 3 個重點 + 待辦行動項（誰、做什麼、何時）。用白話。</code></div>
+          <div class="cheat"><h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg>寫信 / 文件</h4><code>幫我草擬一封[情境]的 email，語氣[正式/親切]，重點是[X]，控制在[N]字內。</code></div>
+        </div>
+        <div class="callout tip" style="margin-top:22px"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><div class="bd"><b>萬用口訣再提醒一次</b><p>我是誰 → 我要什麼 → 給我什麼格式 → 看結果、給回饋、再修一次。</p></div></div>
+      </section>
+
+      <footer class="foot">
+        <div class="row">
+          <div><b>用 AI 一起工作</b><br/>Vibe Coding & AI Agent 實戰 · DIS Tech 湖口辦公室教材</div>
+          <div style="text-align:right">講師：＿＿＿＿＿<br/><span style="color:var(--faint)">本教材為內部教育用途</span></div>
+        </div>
+      </footer>
+
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+  var body=document.body;
+  var menuBtn=document.getElementById('menuBtn'), scrim=document.getElementById('scrim');
+  function closeNav(){body.classList.remove('nav-open')}
+  if(menuBtn)menuBtn.addEventListener('click',function(){body.classList.toggle('nav-open')});
+  if(scrim)scrim.addEventListener('click',closeNav);
+  document.querySelectorAll('.nav a').forEach(function(a){a.addEventListener('click',closeNav)});
+
+  var links=[].slice.call(document.querySelectorAll('.nav a'));
+  var map={}; links.forEach(function(l){map[l.getAttribute('href').slice(1)]=l;});
+  var targets=links.map(function(l){return document.getElementById(l.getAttribute('href').slice(1));}).filter(Boolean);
+  if('IntersectionObserver' in window){
+    var spy=new IntersectionObserver(function(es){es.forEach(function(en){
+      if(en.isIntersecting){links.forEach(function(l){l.classList.remove('active')});var a=map[en.target.id];if(a)a.classList.add('active');}
+    });},{rootMargin:'-12% 0px -72% 0px',threshold:0});
+    targets.forEach(function(t){spy.observe(t)});
+  }
+
+  var bar=document.getElementById('reading');
+  function onScroll(){var h=document.documentElement;var max=h.scrollHeight-h.clientHeight;var p=max>0?(h.scrollTop)/max*100:0;if(bar)bar.style.width=p+'%';}
+  window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+
+  document.querySelectorAll('.copy-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var b=btn.closest('.prompt');if(!b)return;var code=b.querySelector('code');if(!code)return;
+      var text=code.innerText;
+      function done(){var o=btn.innerHTML;btn.classList.add('done');btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>已複製';setTimeout(function(){btn.classList.remove('done');btn.innerHTML=o;},1600);}
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done).catch(function(){fb(text);done();});}else{fb(text);done();}
+    });
+  });
+  // ---- Sample-file download links (fill DRIVE with your Google Drive URLs) ----
+  var DRIVE={
+    '01':'https://drive.google.com/file/d/1ZhbleDkiNqhzNtGpy784NplqHFp4QN9V/view?usp=sharing',
+    '02':'https://drive.google.com/file/d/1N8kAB_znZP5Ex_9Tx8lAlFmqRXC31MFx/view?usp=sharing',
+    '03':'https://drive.google.com/file/d/19M3avYDVTyqG-ISaNAueWkGCAPaG-6Xa/view?usp=sharing',
+    '04':'https://drive.google.com/file/d/1Sv6kkUniLDFD1nxG4uj9BKTtyk_SwTzv/view?usp=sharing',
+    '05':'https://drive.google.com/file/d/14PW-WIVHnWF_neFREhvBkcKk6BxZPqSF/view?usp=sharing',
+    '06':'https://drive.google.com/file/d/1ntJAspizuFxL4kWwP5qwUL0CzHCnQZxr/view?usp=sharing',
+    '07':'https://drive.google.com/file/d/19tFFVdPmAhgiquradwioj_RcOxX5Zti_/view?usp=sharing',
+    '08':'https://drive.google.com/file/d/1AkxCZ9lxtFD6NYIMo2wfHxWDs6hIqAYE/view?usp=sharing',
+    '09':'https://drive.google.com/file/d/1OZUPPri5hfQnHVLO7aMBoZBRXOjpalJk/view?usp=sharing',
+    '10':'https://drive.google.com/file/d/1TkvC0U-7qiOSWrtOW5GRd-1xj-7eBSej/view?usp=sharing',
+    '11':'https://drive.google.com/file/d/1eNUA47mZu-znPLQkq4bUqOht-EhXHtVI/view?usp=sharing'
+  };
+  document.querySelectorAll('.dl').forEach(function(a){
+    var k=a.getAttribute('data-file'),u=DRIVE[k];
+    if(u){a.href=u;a.target='_blank';a.rel='noopener';}
+    else{a.classList.add('pending');a.setAttribute('aria-disabled','true');
+      a.addEventListener('click',function(e){e.preventDefault();});
+      var t=a.querySelector('.dltxt');if(t)t.textContent='連結待補';}
+  });
+
+  function fb(t){var ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);}
+})();
+</script>
+</body>
+</html>
