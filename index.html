@@ -933,40 +933,73 @@ T01 機台 Contact 不良偏高、LOT-2610 良率只有 72%，周這週內給初
         <div class="callout info"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span><div class="bd"><b>排程怎麼運作？</b><p>用 Claude Code 的排程／routine、或 Zapier／Make 這類自動化平台、或公司內部 cron 在固定時間觸發 agent；<strong>MCP</strong> 則是讓 agent 安全連到各工具的「萬用插座」。把下面的提示詞貼進去，設定觸發時間即可。</p></div></div>
         <div class="card" style="border:2px solid var(--accent)">
           <span class="chip t" style="display:inline-block;margin-bottom:10px">★ 真實案例 · DIS 內部</span>
-          <h3 style="margin:4px 0 8px;font-size:22px">每日出貨報表：讓 Agent 自己開終端機跑，不用每天貼指令</h3>
-          <p style="margin:0 0 6px"><strong>情境：</strong>每天要產出給大客戶的出貨報表，需彙整多個來源——當日出貨 Excel（Daily Shipment）、Slot Plan Excel、出貨範本（Shipping template），以及一個資料夾裡的多份 <strong>PO PDF</strong>。同事已用 Codex 寫好一支 Python 腳本 <code class="inline">generate_shipping_report.py</code>，能讀這些檔、做對帳（Match / Mismatch / Missing），產出含「對帳 Log」的 Excel，黃／橘色列代表需人工確認。</p>
-          <p style="margin:0 0 4px"><strong>痛點：</strong>每天都要手動開終端機、<code class="inline">cd</code> 到資料夾、貼一長串指令，還要改 <code class="inline">ship_date</code> 和 <code class="inline">output</code> 檔名——很煩、容易貼錯。</p>
-          <div class="callout tip" style="margin:14px 0"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.6 1 1.5 1 2.3h6c0-.8.4-1.7 1-2.3A7 7 0 0 0 12 2z"/></svg></span><div class="bd"><b>關鍵觀念：不用自己貼指令</b><p>Codex / Claude Code / Antigravity 這類 agent <strong>本來就能執行終端機指令</strong>。你只要①開放「終端機／指令執行」權限給它、②用白話交代任務，它就會自己 <code class="inline">cd</code>、組出指令、執行、回報結果。</p></div></div>
-          <h4>解法 1 · 請 Agent 直接執行（最快）</h4>
-          <p style="font-size:14.5px;color:var(--muted);margin:0 0 8px">把腳本與檔案準備好，用一段話請它跑——它會自己組出 <code class="inline">python generate_shipping_report.py --daily … --ship_date … --output …</code> 並執行。</p>
-          <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">給 Codex / Claude Code</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">我有一支 generate_shipping_report.py，會彙整「當日出貨 Excel、Slot Plan、出貨範本」以及「PO 資料夾裡的多個 PDF」，產出含對帳 Log 的出貨報表。
-請你幫我「直接開終端機執行」它（不用我手動貼指令），參數：
+          <h3 style="margin:4px 0 8px;font-size:22px">每日出貨報表：把「每天手動的苦差事」交給 AI</h3>
+          <p style="margin:0 0 8px">想像一下：每天上班第一件事，就是把好幾個 Excel（當日出貨、Slot Plan、範本）跟一疊 PO 的 PDF 兜在一起，一行一行核對數量對不對，再做成一份出貨表交出去。光是開檔、比對、改日期、貼指令，就花掉十幾二十分鐘——而且一不小心就看漏一行、貼錯一個路徑。<strong>這是 DIS 一位同仁每天的真實情況。</strong></p>
+          <p style="margin:0 0 4px">同事已經用 Codex 寫好一支 Python 腳本 <code class="inline">generate_shipping_report.py</code>，能讀這些檔、自動對帳（Match / Mismatch / Missing），產出含「對帳 Log」的 Excel（<strong>黃／橘色列＝需人工確認</strong>）。但每天還是要手動開終端機、貼一長串指令、改日期——我們就一步步把它變成「電腦自己做，你只看異常」。</p>
+          <div class="callout tip" style="margin:14px 0"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.6 1 1.5 1 2.3h6c0-.8.4-1.7 1-2.3A7 7 0 0 0 12 2z"/></svg></span><div class="bd"><b>先記住三件事（你不用會寫程式）</b><p>① 把「你每天怎麼做」講清楚，像在教新人；② 設好權限，讓 AI 能開終端機、但限定範圍；③ 把「需要人判斷的」留給人（例如對不起來的那幾行）。剩下重複的，交給 AI。</p></div></div>
+          <h4>① 先讓 AI 幫你「打造」這個工具（你還沒有腳本時）</h4>
+          <p style="font-size:14.5px;color:var(--muted);margin:0 0 8px">很多人卡在「我又不會寫程式，怎麼做工具？」——其實你只要會「描述你的工作流程」。把下面這段貼給 Codex 或 Claude Code，它會問你問題、幫你把工具寫好、還用你的檔案測給你看。</p>
+          <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">給 Codex / Claude Code（打造工具）</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">我想做一個「每日出貨報表」的小工具，但我不會寫程式，請你幫我打造，並一步步帶我。
+
+【我每天手動在做的事】
+1. 打開三個 Excel：當日出貨（Daily Shipment）、Slot Plan、出貨範本（Shipping template）
+2. 還有一個資料夾，裡面是好幾份 PO 的 PDF，我要從每份 PDF 讀出 PO 的品項與數量
+3. 把出貨數量跟 Slot Plan、PO 對帳，分成「對得起來 / 數量不符 / 找不到」
+4. 套進範本，產出要交給客戶的出貨表
+
+【我要的工具】
+- 一支可重複使用的程式（Python 就好），我每天只要換「出貨日期」和「輸出檔名」就能跑
+- 產出的 Excel 要有兩個分頁：①出貨表 ②對帳 Log（寫清楚 Match / Mismatch / Missing 的原因）
+- 對不起來、或找不到 PO 的那幾列，用顏色標出來提醒我人工確認
+
+【請你這樣做】
+1. 先問我必要的問題（每個檔的欄位名稱、對帳規則），不要自己假設
+2. 把做法規劃給我看，我同意後再開始寫
+3. 寫好後，用我給的範例檔實際跑一次、把結果給我看
+4. 教我「之後每天怎麼用」，越簡單越好</span></code></pre></div>
+          <h4>② 請 Agent 直接幫你跑（不用每天貼指令）</h4>
+          <p style="font-size:14.5px;color:var(--muted);margin:0 0 8px">工具做好後，把檔案放好，用一段話請它跑——它會自己組出指令並執行，你不用貼。</p>
+          <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">給 Codex / Claude Code（直接執行）</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">我已經有一支 generate_shipping_report.py，會彙整當日出貨 Excel、Slot Plan、出貨範本、以及 PO 資料夾裡的 PDF，產出含對帳 Log 的出貨報表。
+請你「直接開終端機幫我執行」（不用我手動貼指令），參數：
 - daily：今天的「Daily shipment.xlsx」
 - slot：「Slot Plan_2026.xlsx」
 - template：「Shipping template.xlsx」
 - po_folder：「PO」資料夾
-- ship_date：今天日期（YYYY-MM-DD）
-- output：「Shipping_Output_今天日期.xlsx」
-跑完後把對帳結果摘要給我，特別把 Mismatch / Missing 的列列出來提醒我。</span></code></pre></div>
-          <h4>解法 2 · 包成「一句話／一鍵」</h4>
-          <p style="font-size:14.5px;color:var(--muted);margin:0 0 8px">讓每天會變的參數（日期、檔名）自動帶入，之後只要說「跑今天的出貨報表」。</p>
+- ship_date：今天日期、output：「Shipping_Output_今天日期.xlsx」
+跑完把對帳結果摘要給我，Mismatch / Missing 的列要列出來提醒我。</span></code></pre></div>
+          <h4>③ 包成「一句話／一鍵」</h4>
+          <p style="font-size:14.5px;color:var(--muted);margin:0 0 8px">讓每天會變的參數自動帶入，之後只要說「跑今天的出貨報表」。</p>
           <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">給 Agent</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">幫我把它變成「一句話就能跑」：
-1) 自動用今天日期當 ship_date 與 output 檔名（Shipping_Output_YYYYMMDD.xlsx）
+1) 自動用今天日期當 ship_date 與 output 檔名
 2) 從固定資料夾抓 daily / slot / template / PO，不用每天輸入路徑
-3) 也幫我產生一個 run_today.bat，雙擊就能跑
-之後我只要說「跑今天的出貨報表」，你就直接執行並回報對帳摘要（Mismatch/Missing 用紅字）。</span></code></pre></div>
-          <h4>解法 3 · 排程每天自動產出</h4>
-          <p style="font-size:14.5px;color:var(--muted);margin:0 0 8px">最後一步：完全自動。用 Windows 工作排程器或 Claude Code routine 每天定時跑，產出後把對帳摘要寄給你。</p>
+3) 也產生一個 run_today.bat，雙擊就能跑
+之後我只要說「跑今天的出貨報表」，你就執行並回報對帳摘要（Mismatch/Missing 用紅字）。</span></code></pre></div>
+          <h4>④ 排程每天自動產出</h4>
+          <p style="font-size:14.5px;color:var(--muted);margin:0 0 8px">最後一步：完全自動。每天定時跑、產出後把對帳摘要寄給你，你只在有異常時出手。</p>
           <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">給 Agent</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">幫我設定每天早上 08:30 自動產出今天的出貨報表：
-- 用 Windows 工作排程器（Task Scheduler）每天觸發 run_today.bat
-- 跑完把對帳摘要（Match/Mismatch/Missing 數量＋需人工確認的列）寄到我的信箱（草稿待我確認再寄）
-先把排程設定步驟列給我，我確認後再建立。</span></code></pre></div>
+- 用 Windows 工作排程器每天觸發 run_today.bat
+- 跑完把對帳摘要（Match/Mismatch/Missing 數量＋需人工確認的列）寄到我信箱（草稿待我確認再寄）
+先把設定步驟列給我，我確認後再建立。</span></code></pre></div>
           <h4>怎麼開放終端機給 Agent（各工具設定）</h4>
           <div class="table-wrap"><table><thead><tr><th>工具</th><th>怎麼讓它執行終端機指令</th></tr></thead><tbody>
             <tr><td><b>Claude Code</b></td><td>內建就能在終端機執行。用權限模式控管：逐次核准（最安全）、設定「允許的指令」清單、或自動接受。建議先從逐次核准開始。</td></tr>
             <tr><td><b>Codex</b></td><td>CLI agent，有核准模式：<strong>Suggest</strong>（每步問你）→ <strong>Auto-edit</strong> → <strong>Full-auto</strong>（在工作目錄內自動執行）。依信任程度逐步放寬。</td></tr>
             <tr><td><b>Antigravity</b></td><td>Agent IDE，內建整合終端機，agent 可直接在裡面執行指令，可設定自動或逐次核准。</td></tr>
           </tbody></table></div>
+          <div class="callout info" style="margin:16px 0"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span><div class="bd"><b>換成你的工作（這招不只做出貨報表）</b><p>只要你有「每天／每週都要把幾份檔案兜起來、整理成一份東西」的工作，就能用同一招。把下面的空格換成你的情況，貼給 AI：</p></div></div>
+          <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">通用模板 · 直接套用</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">我每天（或每週）都要做一件重複的事，想讓 AI 幫我做成自動工具。我不會寫程式。
+
+【我手動在做的事】（照你的情況填）
+1. 我要打開／用到的檔案有：＿＿＿＿
+2. 我要從裡面抓的資訊是：＿＿＿＿
+3. 我要做的比對／計算／整理是：＿＿＿＿
+4. 我最後要產出什麼、給誰、什麼格式：＿＿＿＿
+
+【我要的工具】
+- 可重複使用，每天只要改少數參數
+- 需要人工確認的地方請標出來，不要自動下結論
+
+請先問我問題、把做法規劃給我看，我確認後再幫我做，並用我的範例檔測試＋教我怎麼用。</span></code></pre></div>
           <div class="callout danger" style="margin-bottom:0"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><div class="bd"><b>開終端機很強大，務必這樣用</b><p>① 先在<strong>副本資料夾</strong>測試，別直接對原始資料跑；② <strong>最小權限</strong>：限定工作目錄與允許的指令，別一開始就全自動；③ 會覆蓋／刪除／寄送的動作，先看它打算跑什麼再放行；④ 對帳輸出一定<strong>人工檢視「黃／橘色＝需確認」</strong>的列，最終判斷由人負責。</p></div></div>
         </div>
 
