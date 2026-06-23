@@ -980,6 +980,7 @@ T01 機台 Contact 不良偏高、LOT-2610 良率只有 72%，周這週內給初
 - 用 Windows 工作排程器每天觸發 run_today.bat
 - 跑完把對帳摘要（Match/Mismatch/Missing 數量＋需人工確認的列）寄到我信箱（草稿待我確認再寄）
 先把設定步驟列給我，我確認後再建立。</span></code></pre></div>
+          <div class="vid"><video src="media/ladder.mp4" muted loop playsinline preload="metadata" controls></video><div class="cap"><b>▶ 動畫示範</b>自動化的四個階段：手動跑 → Agent 代跑 → 一鍵 → 排程，越往上越自動</div></div>
           <h4>怎麼開放終端機給 Agent（各工具設定）</h4>
           <div class="table-wrap"><table><thead><tr><th>工具</th><th>怎麼讓它執行終端機指令</th></tr></thead><tbody>
             <tr><td><b>Claude Code</b></td><td>內建就能在終端機執行。用權限模式控管：逐次核准（最安全）、設定「允許的指令」清單、或自動接受。建議先從逐次核准開始。</td></tr>
@@ -1096,11 +1097,74 @@ T01 機台 Contact 不良偏高、LOT-2610 良率只有 72%，周這週內給初
 
 【限制】引用產品數據需標出處；不確定處標「需向 RD 確認」，不得自行承諾規格或交期。</span></code></pre></div>
         </div>
+        <div class="card">
+          <div class="chips" style="margin-bottom:10px"><span class="chip t">職位 · 品保工程師</span><span class="chip">排程：每日 09:00</span><span class="chip">串接：客訴表 · Slack · Gmail</span></div>
+          <h4 style="margin:0 0 6px;font-size:17px">客訴 SLA 監控與根因彙整</h4>
+          <p style="margin:0 0 10px;color:var(--muted);font-size:14.5px">每天自動揪出超過 SLA 未結案的客訴，分類、排名、升級提醒。</p>
+          <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">Agent 設定提示詞</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">你是 DIS Tech 的品保工程師助理。每天 09:00 自動執行。
+
+【資料來源 / 連接】
+- 客訴記錄表（日期、客戶、產品、問題、類別、嚴重度、狀態、處理人）
+- Slack #qa-alert、Gmail
+
+【步驟】
+1. 找出「超過 SLA 未結案」的客訴（例：高嚴重度 3 天、中 5 天）。
+2. 依問題類型歸類（接觸不良 / 機構 / 訊號 / 交期 / 包裝…），做次數排名。
+3. 對高嚴重度且逾期的，整理時間軸與已處理動作。
+
+【輸出與動作】
+- 產生「客訴日報」：逾期清單、Pareto、需升級項目。
+- 逾期高嚴重度 → Slack 提醒處理人與主管，並草擬給客戶的進度說明（待核准）。
+
+【限制】根因與承諾須由工程師確認；對客戶的回覆一律先出草稿待核准。</span></code></pre></div>
+        </div>
+        <div class="card">
+          <div class="chips" style="margin-bottom:10px"><span class="chip t">職位 · 物料 / 倉儲</span><span class="chip">排程：每日</span><span class="chip">串接：庫存表 · 採購 · Slack</span></div>
+          <h4 style="margin:0 0 6px;font-size:17px">庫存補貨與呆滯料提醒</h4>
+          <p style="margin:0 0 10px;color:var(--muted);font-size:14.5px">自動找出低於安全庫存的料號做補貨清單，並揪出呆滯料。</p>
+          <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">Agent 設定提示詞</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">你是 DIS Tech 的物料 / 倉儲管理助理。每天自動執行。
+
+【資料來源 / 連接】
+- 庫存盤點表（料號、品名、類別、現有庫存、安全庫存、單位、最後異動日）
+- 採購窗口、Slack
+
+【步驟】
+1. 找出「現有庫存 < 安全庫存」的料號，算出缺口數量。
+2. 找出「呆滯料」：超過 90 天未異動的品項。
+3. 依類別分組整理。
+
+【輸出與動作】
+- 產生補貨清單（料號、缺口、建議採購量），寄給採購（草稿待核准）。
+- 呆滯料清單提醒主管檢視。
+
+【限制】建議採購量僅供參考，實際下單由採購決定。</span></code></pre></div>
+        </div>
+        <div class="card">
+          <div class="chips" style="margin-bottom:10px"><span class="chip t">職位 · 人資 / 行政</span><span class="chip">排程：每週一</span><span class="chip">串接：訓練表 · 行事曆 · Gmail</span></div>
+          <h4 style="margin:0 0 6px;font-size:17px">訓練與證照到期追蹤</h4>
+          <p style="margin:0 0 10px;color:var(--muted);font-size:14.5px">自動算訓練完成率、列未完成名單、提醒 90 天內證照到期。</p>
+          <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">Agent 設定提示詞</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">你是 DIS Tech 的人資 / 行政助理。每週一自動執行。
+
+【資料來源 / 連接】
+- 教育訓練紀錄（員工、部門、課程、日期、時數、是否完成、證照到期日）
+- 行事曆、Gmail
+
+【步驟】
+1. 計算各部門訓練完成率，列出「未完成」名單。
+2. 找出 90 天內證照到期的人員。
+3. 整理本月排定的訓練行程。
+
+【輸出與動作】
+- 產生「訓練追蹤週報」。
+- 對未完成者與即將到期者寄個人化提醒（草稿待核准），並在行事曆建立到期提醒。
+
+【限制】個資僅用於提醒、依公司個資政策處理；提醒寄出前先核准。</span></code></pre></div>
+        </div>
         <h3>更多可排程的點子（用我們的範例資料就能練）</h3>
         <div class="table-wrap"><table><thead><tr><th>職位</th><th>排程</th><th>串接</th><th>自動做的事</th></tr></thead><tbody>
-          <tr><td><b>品保 QA</b></td><td>每日</td><td>客訴表 · Slack</td><td>找出超過 SLA 未結案的客訴，提醒處理人並升級。</td></tr>
-          <tr><td><b>HR / 行政</b></td><td>每週一</td><td>教育訓練表 · 行事曆</td><td>列出 90 天內證照到期者與未完成訓練名單，自動發提醒。</td></tr>
-          <tr><td><b>倉儲</b></td><td>每日</td><td>庫存表 · 採購</td><td>找出低於安全庫存的料號，自動草擬補貨單。</td></tr>
+          <tr><td><b>業務助理</b></td><td>每日</td><td>訂單表 · Gmail</td><td>彙整今日出貨／交期狀態，草擬給客戶的進度通知。</td></tr>
+          <tr><td><b>IT</b></td><td>每日</td><td>伺服器 · Slack</td><td>檢查備份是否成功、磁碟／服務狀態，異常即時告警。</td></tr>
+          <tr><td><b>工務 / 設備</b></td><td>每週</td><td>保養表 · 行事曆</td><td>列出本週到期的設備保養，自動建立提醒與工單。</td></tr>
           <tr><td><b>會計</b></td><td>每月 1 號</td><td>費用表 · Drive</td><td>月結費用自動分類彙整，產出月報草稿。</td></tr>
         </tbody></table></div>
         <div class="callout danger"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><div class="bd"><b>排程自動化的安全守則</b><p>排程會「自己跑」，風險更高：① 先用<strong>唯讀</strong>（只分析、只通知）；② 會寄信／改資料／刪除的動作，一律<strong>先出草稿待人工核准</strong>；③ 給<strong>最小權限</strong>、只授權必要範圍；④ 保留執行紀錄、可隨時關閉。詳見第 20 章「資料不外洩」。</p></div></div>
