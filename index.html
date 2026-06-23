@@ -337,15 +337,16 @@ td b{color:var(--accent-ink)}
       <div class="nav-group"><p>更多應用</p>
         <a href="#cases"><span class="dot"></span>16 · 各部門範例案例</a>
         <a href="#connect"><span class="dot"></span>17 · 連上你的工具</a>
-        <a href="#files"><span class="dot"></span>18 · 範例檔下載中心</a>
+        <a href="#auto"><span class="dot"></span>18 · 自動化與排程</a>
+        <a href="#files"><span class="dot"></span>19 · 範例檔下載中心</a>
       </div>
       <div class="nav-group"><p>收尾篇</p>
-        <a href="#ch7"><span class="dot"></span>19 · 安全與界線</a>
-        <a href="#ch8"><span class="dot"></span>20 · 養成習慣</a>
-        <a href="#cheat"><span class="dot"></span>21 · 速查表</a>
-        <a href="#install"><span class="dot"></span>22 · 安裝指南</a>
-        <a href="#build"><span class="dot"></span>23 · 幕後製作</a>
-        <a href="#log"><span class="dot"></span>24 · 完整製作紀錄</a>
+        <a href="#ch7"><span class="dot"></span>20 · 安全與界線</a>
+        <a href="#ch8"><span class="dot"></span>21 · 養成習慣</a>
+        <a href="#cheat"><span class="dot"></span>22 · 速查表</a>
+        <a href="#install"><span class="dot"></span>23 · 安裝指南</a>
+        <a href="#build"><span class="dot"></span>24 · 幕後製作</a>
+        <a href="#log"><span class="dot"></span>25 · 完整製作紀錄</a>
       </div>
     </nav>
   </aside>
@@ -924,9 +925,119 @@ T01 機台 Contact 不良偏高、LOT-2610 良率只有 72%，周這週內給初
 
       <hr/>
 
+      <!-- AUTO -->
+      <section id="auto">
+        <div class="sec-head"><span class="sec-num">18</span><span class="sec-tag">// 更多應用</span><h2>自動化與排程</h2><p class="sec-sub">從「請 AI 做一次」進化到「設定一次、固定時間自動跑」，並串接多個工具完成整條流程。</p></div>
+        <p class="lead-in">前面都是「你開口、AI 做一次」。再進一階，是讓 agent <strong>按排程自動執行</strong>、並透過 <strong>MCP 串接多個工具</strong>（信箱、試算表、行事曆、Slack、資料庫…）把整條流程自動跑完。下面用幾個職位的真實工作流示範，<strong>提示詞可直接當成 agent 的設定</strong>。</p>
+        <div class="callout info"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span><div class="bd"><b>排程怎麼運作？</b><p>用 Claude Code 的排程／routine、或 Zapier／Make 這類自動化平台、或公司內部 cron 在固定時間觸發 agent；<strong>MCP</strong> 則是讓 agent 安全連到各工具的「萬用插座」。把下面的提示詞貼進去，設定觸發時間即可。</p></div></div>
+        <div class="card">
+          <div class="chips" style="margin-bottom:10px"><span class="chip t">職位 · 業務營運分析師</span><span class="chip">排程：每週一 08:00</span><span class="chip">串接：Drive · 行事曆 · Slack</span></div>
+          <h4 style="margin:0 0 6px;font-size:17px">每週業績自動報告</h4>
+          <p style="margin:0 0 10px;color:var(--muted);font-size:14.5px">把散落的訂單變成「結論先講」的週報，每週一自動送到主管信箱與 Slack。</p>
+          <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">Agent 設定提示詞</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">你是 DIS Tech 的業務營運分析師。每週一 08:00 自動執行以下工作。
+
+【資料來源 / 連接】
+- Google Drive 的「訂單明細」試算表（訂單編號、日期、客戶、地區、產品線、數量、單價、金額）
+- 上週同一份週報（供環比）
+
+【步驟】
+1. 讀本週與上週訂單明細；「金額」缺漏時以 數量×單價 補算，並標出與原值不符的列。
+2. 依「地區 / 產品線 / 週」彙整營收，計算 WoW（週對週）增減 %。
+3. 找出本週前 3 大客戶，以及成長最快、下滑最多的產品線。
+4. 產出一頁式週報：先 3 句結論，再表格，最後 2 點建議。
+
+【輸出與動作】
+- 週報存成 Google 文件，命名「業績週報_YYYYWW」。
+- 在 Slack #sales-ops 貼上 3 句結論摘要。
+- 寄給業務主管（先產生草稿待我核准再寄）。
+
+【限制】數字一律以資料為準、不得推估；缺資料標「待補」；寄信／貼文等對外動作先出草稿待核准。</span></code></pre></div>
+        </div>
+        <div class="card">
+          <div class="chips" style="margin-bottom:10px"><span class="chip t">職位 · 採購專員</span><span class="chip">排程：每日 / 收到報價時</span><span class="chip">串接：Gmail · 試算表 · 匯率 MCP</span></div>
+          <h4 style="margin:0 0 6px;font-size:17px">供應商報價監控與比價</h4>
+          <p style="margin:0 0 10px;color:var(--muted);font-size:14.5px">新報價一進信箱就自動換算、比價、抓異常漲價，不必人工逐封看。</p>
+          <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">Agent 設定提示詞</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">你是 DIS Tech 的採購專員。每天上午、以及每次收到供應商報價信時自動執行。
+
+【資料來源 / 連接】
+- Gmail：主旨或附件含「報價 / quote」的新郵件（讀取附件表格）
+- Drive「供應商報價」比價表（歷史報價）
+- 匯率來源（MCP）：USD、JPY 對台幣即時匯率
+
+【步驟】
+1. 從新報價信擷取：供應商、料號、單價、幣別、MOQ、交期。
+2. 以即時匯率換算成「台幣/件」，交期統一成天數。
+3. 與歷史比價：標出漲幅 >5% 的項目，與每個料號目前最划算的供應商。
+4. 更新比價表並加上「更新日期」與匯率時間。
+
+【輸出與動作】
+- 比價表標記異常與最佳選擇。
+- 若漲幅 >5%，或新供應商便宜 >10% → 寄提醒給採購主管（草稿待核准）。
+
+【限制】匯率與報價需註明來源與時間；無法判讀的附件列為「待人工確認」，不臆測。</span></code></pre></div>
+        </div>
+        <div class="card">
+          <div class="chips" style="margin-bottom:10px"><span class="chip t">職位 · 製程工程師</span><span class="chip">排程：每日 07:00</span><span class="chip">串接：測試系統 · Drive · Slack</span></div>
+          <h4 style="margin:0 0 6px;font-size:17px">每日良率與測試異常監控</h4>
+          <p style="margin:0 0 10px;color:var(--muted);font-size:14.5px">夜班結束自動算良率、做 Pareto、抓出問題機台，異常即時告警。</p>
+          <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">Agent 設定提示詞</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">你是 DIS Tech 製程工程師的分析助理。每天 07:00（夜班結束後）自動執行。
+
+【資料來源 / 連接】
+- 測試系統匯出的測試 log（CSV：timestamp, lot, device_id, test_item, result, measured, bin）
+- 良率歷史資料表（Drive）
+- Slack #fab-alert（告警用）
+
+【步驟】
+1. 計算昨日整體 PASS/FAIL 率與各批號良率。
+2. 以「測項」做 Pareto，找出失敗最多的測項與失敗率最高的批號。
+3. 交叉比對「機台」：某機台的特定不良（如 Contact）明顯偏高就標記。
+4. 與近 7 日趨勢比較，判斷是否惡化。
+
+【輸出與動作】
+- 產生「製程日報」：良率、Pareto、趨勢、3 點觀察。
+- 若任一批號良率 <90%，或某測項失敗率異常升高 → 立即發 Slack 告警，標註疑似機台與負責人。
+
+【限制】只做分析與告警，不更動任何生產設定；根因須由工程師確認。</span></code></pre></div>
+        </div>
+        <div class="card">
+          <div class="chips" style="margin-bottom:10px"><span class="chip t">職位 · FAE / 客戶經理</span><span class="chip">排程：每日 08:30</span><span class="chip">串接：行事曆 · 客戶表 · Gmail · NotebookLM</span></div>
+          <h4 style="margin:0 0 6px;font-size:17px">拜訪前自動備課</h4>
+          <p style="margin:0 0 10px;color:var(--muted);font-size:14.5px">看今天的客戶會議，自動整理客戶摘要＋對應方案，產出會前一頁簡報。</p>
+          <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">Agent 設定提示詞</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">你是 DIS Tech 的 FAE 備課助理。每天 08:30 自動執行。
+
+【資料來源 / 連接】
+- Google 行事曆：今天標記為「客戶拜訪 / 會議」的行程
+- 客戶名單表（公司、聯絡人、地區、需求、優先級）
+- Gmail：與該客戶近 30 天往來郵件
+- NotebookLM 產品知識庫（規格、turn-key 流程、FAQ）
+
+【步驟】
+1. 找出今天要見的客戶。
+2. 每位客戶整理：基本資料、近期往來重點、未結待辦、需求。
+3. 從產品知識庫抓對應方案與賣點（附出處）。
+4. 預判客戶可能的問題，準備 3 個回答。
+
+【輸出與動作】
+- 每場會議產出一頁「會前簡報」，會議前 1 小時寄給負責 FAE。
+- 草擬一封會後跟進信範本（待會後填寫、人工送出）。
+
+【限制】引用產品數據需標出處；不確定處標「需向 RD 確認」，不得自行承諾規格或交期。</span></code></pre></div>
+        </div>
+        <h3>更多可排程的點子（用我們的範例資料就能練）</h3>
+        <div class="table-wrap"><table><thead><tr><th>職位</th><th>排程</th><th>串接</th><th>自動做的事</th></tr></thead><tbody>
+          <tr><td><b>品保 QA</b></td><td>每日</td><td>客訴表 · Slack</td><td>找出超過 SLA 未結案的客訴，提醒處理人並升級。</td></tr>
+          <tr><td><b>HR / 行政</b></td><td>每週一</td><td>教育訓練表 · 行事曆</td><td>列出 90 天內證照到期者與未完成訓練名單，自動發提醒。</td></tr>
+          <tr><td><b>倉儲</b></td><td>每日</td><td>庫存表 · 採購</td><td>找出低於安全庫存的料號，自動草擬補貨單。</td></tr>
+          <tr><td><b>會計</b></td><td>每月 1 號</td><td>費用表 · Drive</td><td>月結費用自動分類彙整，產出月報草稿。</td></tr>
+        </tbody></table></div>
+        <div class="callout danger"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><div class="bd"><b>排程自動化的安全守則</b><p>排程會「自己跑」，風險更高：① 先用<strong>唯讀</strong>（只分析、只通知）；② 會寄信／改資料／刪除的動作，一律<strong>先出草稿待人工核准</strong>；③ 給<strong>最小權限</strong>、只授權必要範圍；④ 保留執行紀錄、可隨時關閉。詳見第 20 章「資料不外洩」。</p></div></div>
+      </section>
+
+      <hr/>
+
       <!-- FILES -->
       <section id="files">
-        <div class="sec-head"><span class="sec-num">18</span><span class="sec-tag">// 更多應用</span><h2>範例檔下載中心</h2><p class="sec-sub">全部都是虛構練習檔，下載後即可跟著各章節操作。</p></div>
+        <div class="sec-head"><span class="sec-num">19</span><span class="sec-tag">// 更多應用</span><h2>範例檔下載中心</h2><p class="sec-sub">全部都是虛構練習檔，下載後即可跟著各章節操作。</p></div>
         <div class="callout info"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span><div class="bd"><b>下載連結</b><p>點各列的「下載」會開啟該檔（Google 預覽頁，右上角可下載）；也可以 <a href="https://drive.google.com/drive/folders/1Xg3zzChtIrDLgdhPwCvY2RGRBBKogeO9" target="_blank" rel="noopener">開啟整個雲端資料夾</a> 一次取得全部 11 份。</p></div></div>
         <div class="table-wrap"><table><thead><tr><th>#</th><th>部門</th><th>範例檔</th><th>練習重點</th><th>下載</th></tr></thead><tbody>
           <tr><td>01</td><td>業務</td><td>客戶名單</td><td>去重 / 分類 / 優先級</td><td><a class="dl" data-file="01" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="dltxt">下載</span></a></td></tr>
@@ -951,7 +1062,7 @@ T01 機台 Contact 不良偏高、LOT-2610 良率只有 72%，周這週內給初
 
       <!-- CH7 -->
       <section id="ch7">
-        <div class="sec-head"><span class="sec-num">19</span><span class="sec-tag">// 收尾篇</span><h2>安全與界線</h2><p class="sec-sub">越強大的工具，越要懂得安全地用。這頁請務必記住。</p></div>
+        <div class="sec-head"><span class="sec-num">20</span><span class="sec-tag">// 收尾篇</span><h2>安全與界線</h2><p class="sec-sub">越強大的工具，越要懂得安全地用。這頁請務必記住。</p></div>
         <div class="grid c2">
           <div class="callout danger" style="margin:0"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><div class="bd"><b>不要外洩機密</b><p>客戶 NDA 資料、未公開設計、報價、員工個資，<strong>不要</strong>貼進公開 AI。先確認公司核可的工具與方案（企業版通常有資料保護條款）。</p></div></div>
           <div class="callout warn" style="margin:0"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></span><div class="bd"><b>AI 會自信地犯錯</b><p>數字、規格、報價、來源都可能「看起來對、其實錯」（幻覺）。任何對外或重要輸出，<strong>一定要人工驗證</strong>。</p></div></div>
@@ -982,7 +1093,7 @@ T01 機台 Contact 不良偏高、LOT-2610 良率只有 72%，周這週內給初
 
       <!-- CH8 -->
       <section id="ch8">
-        <div class="sec-head"><span class="sec-num">20</span><span class="sec-tag">// 收尾篇</span><h2>養成習慣</h2><p class="sec-sub">聽完不用就忘了。用三個小動作，把它變成每天的工具。</p></div>
+        <div class="sec-head"><span class="sec-num">21</span><span class="sec-tag">// 收尾篇</span><h2>養成習慣</h2><p class="sec-sub">聽完不用就忘了。用三個小動作，把它變成每天的工具。</p></div>
         <div class="steps">
           <div class="step"><h4>本週挑一個「煩任務」交給 AI</h4><p>選你每週都做、又有點煩的事（整理表格、寫週報、彙整郵件）。做一次，感受差別。</p></div>
           <div class="step"><h4>養成「先問 AI」的反射</h4><p>動手前先想：「這件事能不能先讓 AI 打個草稿？」久了會自然。</p></div>
@@ -995,7 +1106,7 @@ T01 機台 Contact 不良偏高、LOT-2610 良率只有 72%，周這週內給初
 
       <!-- CHEAT -->
       <section id="cheat">
-        <div class="sec-head"><span class="sec-num">21</span><span class="sec-tag">// APPENDIX</span><h2>速查表</h2><p class="sec-sub">把這頁存起來。需要時改幾個字就能用。</p></div>
+        <div class="sec-head"><span class="sec-num">22</span><span class="sec-tag">// APPENDIX</span><h2>速查表</h2><p class="sec-sub">把這頁存起來。需要時改幾個字就能用。</p></div>
         <div class="grid c2">
           <div class="cheat"><h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>整理 / 清資料</h4><code>我附上一份[資料]。請去除重複、統一格式、補上[欄位]，輸出乾淨表格，最後用幾句話摘要重點。</code></div>
           <div class="cheat"><h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>名片辨識</h4><code>附上名片照片。辨識成表格：公司、姓名、職稱、email、電話、地址。不確定的留空，最後列出讀不清的。</code></div>
@@ -1011,7 +1122,7 @@ T01 機台 Contact 不良偏高、LOT-2610 良率只有 72%，周這週內給初
 
       <!-- INSTALL -->
       <section id="install">
-        <div class="sec-head"><span class="sec-num">22</span><span class="sec-tag">// APPENDIX</span><h2>安裝指南</h2><p class="sec-sub">三個主要工具的官方下載與安裝方式（版本更新快，請以官方頁面為準）。</p></div>
+        <div class="sec-head"><span class="sec-num">23</span><span class="sec-tag">// APPENDIX</span><h2>安裝指南</h2><p class="sec-sub">三個主要工具的官方下載與安裝方式（版本更新快，請以官方頁面為準）。</p></div>
         <div class="grid c3">
           <div class="install-card">
             <div class="h"><span class="b" style="background:#d97757">cc</span><h4>Claude 桌面版</h4></div>
@@ -1048,14 +1159,14 @@ T01 機台 Contact 不良偏高、LOT-2610 良率只有 72%，周這週內給初
             <a href="https://antigravity.google" target="_blank" rel="noopener">官方網站 ↗</a>
           </div>
         </div>
-        <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><div class="bd"><b>安裝後別忘了</b><p>都要先登入帳號才能用。處理<strong>公司資料</strong>時，請用公司核可的帳號／方案，並參考第 19 章「資料不外洩」的設定。</p></div></div>
+        <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><div class="bd"><b>安裝後別忘了</b><p>都要先登入帳號才能用。處理<strong>公司資料</strong>時，請用公司核可的帳號／方案，並參考第 20 章「資料不外洩」的設定。</p></div></div>
       </section>
 
       <hr/>
 
       <!-- BUILD STORY -->
       <section id="build">
-        <div class="sec-head"><span class="sec-num">23</span><span class="sec-tag">// 幕後</span><h2>這個網站怎麼做的</h2><p class="sec-sub">整份教材、範例與影片，都是這場對話用 Claude Code 一路做出來的。</p></div>
+        <div class="sec-head"><span class="sec-num">24</span><span class="sec-tag">// 幕後</span><h2>這個網站怎麼做的</h2><p class="sec-sub">整份教材、範例與影片，都是這場對話用 Claude Code 一路做出來的。</p></div>
         <div class="vid"><video src="media/build.mp4" muted loop playsinline preload="metadata" controls></video><div class="cap"><b>▶ 幕後流程</b>一句話需求 → 研究公司 → 設計系統 → 迭代風格 → 生成範例上雲 → 做動畫 → 部署上線（全程對話完成）</div></div>
         <p style="margin-top:8px;color:var(--muted);font-size:14.5px">想自己做一份？關鍵只有一件事：<strong style="color:var(--ink)">把需求講清楚、一路給回饋</strong>——剩下交給 AI。這支影片就是最好的示範。</p>
       </section>
@@ -1064,7 +1175,7 @@ T01 機台 Contact 不良偏高、LOT-2610 良率只有 72%，周這週內給初
 
       <!-- LOG -->
       <section id="log">
-        <div class="sec-head"><span class="sec-num">24</span><span class="sec-tag">// 附錄</span><h2>完整製作紀錄</h2><p class="sec-sub">這個網站從第一句需求到上線，講師與 Claude Code 的完整對話全文。</p></div>
+        <div class="sec-head"><span class="sec-num">25</span><span class="sec-tag">// 附錄</span><h2>完整製作紀錄</h2><p class="sec-sub">這個網站從第一句需求到上線，講師與 Claude Code 的完整對話全文。</p></div>
         <p style="color:var(--muted);font-size:14.5px;margin-bottom:6px">這份紀錄本身就是「用講人話＋一路迭代」的範例——你看到的所有內容、範例檔、動畫，都是下面這段對話一步步做出來的。<span style="color:#1f5fd6;font-weight:700">藍色粗體</span>是講師說的話，其餘是 Claude 的回覆。</p>
         <details class="logbox">
           <summary>點開閱讀完整對話（藍字＝講師、黑字＝Claude）</summary>
