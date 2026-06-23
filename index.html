@@ -42,7 +42,7 @@
   --ease:cubic-bezier(.22,.61,.36,1);
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
+html{scroll-behavior:auto}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
 body{
   margin:0;background:var(--bg);color:var(--text);
@@ -931,6 +931,45 @@ T01 機台 Contact 不良偏高、LOT-2610 良率只有 72%，周這週內給初
         <div class="sec-head"><span class="sec-num">18</span><span class="sec-tag">// 更多應用</span><h2>自動化與排程</h2><p class="sec-sub">從「請 AI 做一次」進化到「設定一次、固定時間自動跑」，並串接多個工具完成整條流程。</p></div>
         <p class="lead-in">前面都是「你開口、AI 做一次」。再進一階，是讓 agent <strong>按排程自動執行</strong>、並透過 <strong>MCP 串接多個工具</strong>（信箱、試算表、行事曆、Slack、資料庫…）把整條流程自動跑完。下面用幾個職位的真實工作流示範，<strong>提示詞可直接當成 agent 的設定</strong>。</p>
         <div class="callout info"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span><div class="bd"><b>排程怎麼運作？</b><p>用 Claude Code 的排程／routine、或 Zapier／Make 這類自動化平台、或公司內部 cron 在固定時間觸發 agent；<strong>MCP</strong> 則是讓 agent 安全連到各工具的「萬用插座」。把下面的提示詞貼進去，設定觸發時間即可。</p></div></div>
+        <div class="card" style="border:2px solid var(--accent)">
+          <span class="chip t" style="display:inline-block;margin-bottom:10px">★ 真實案例 · DIS 內部</span>
+          <h3 style="margin:4px 0 8px;font-size:22px">每日出貨報表：讓 Agent 自己開終端機跑，不用每天貼指令</h3>
+          <p style="margin:0 0 6px"><strong>情境：</strong>每天要產出給大客戶的出貨報表，需彙整多個來源——當日出貨 Excel（Daily Shipment）、Slot Plan Excel、出貨範本（Shipping template），以及一個資料夾裡的多份 <strong>PO PDF</strong>。同事已用 Codex 寫好一支 Python 腳本 <code class="inline">generate_shipping_report.py</code>，能讀這些檔、做對帳（Match / Mismatch / Missing），產出含「對帳 Log」的 Excel，黃／橘色列代表需人工確認。</p>
+          <p style="margin:0 0 4px"><strong>痛點：</strong>每天都要手動開終端機、<code class="inline">cd</code> 到資料夾、貼一長串指令，還要改 <code class="inline">ship_date</code> 和 <code class="inline">output</code> 檔名——很煩、容易貼錯。</p>
+          <div class="callout tip" style="margin:14px 0"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.6 1 1.5 1 2.3h6c0-.8.4-1.7 1-2.3A7 7 0 0 0 12 2z"/></svg></span><div class="bd"><b>關鍵觀念：不用自己貼指令</b><p>Codex / Claude Code / Antigravity 這類 agent <strong>本來就能執行終端機指令</strong>。你只要①開放「終端機／指令執行」權限給它、②用白話交代任務，它就會自己 <code class="inline">cd</code>、組出指令、執行、回報結果。</p></div></div>
+          <h4>解法 1 · 請 Agent 直接執行（最快）</h4>
+          <p style="font-size:14.5px;color:var(--muted);margin:0 0 8px">把腳本與檔案準備好，用一段話請它跑——它會自己組出 <code class="inline">python generate_shipping_report.py --daily … --ship_date … --output …</code> 並執行。</p>
+          <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">給 Codex / Claude Code</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">我有一支 generate_shipping_report.py，會彙整「當日出貨 Excel、Slot Plan、出貨範本」以及「PO 資料夾裡的多個 PDF」，產出含對帳 Log 的出貨報表。
+請你幫我「直接開終端機執行」它（不用我手動貼指令），參數：
+- daily：今天的「Daily shipment.xlsx」
+- slot：「Slot Plan_2026.xlsx」
+- template：「Shipping template.xlsx」
+- po_folder：「PO」資料夾
+- ship_date：今天日期（YYYY-MM-DD）
+- output：「Shipping_Output_今天日期.xlsx」
+跑完後把對帳結果摘要給我，特別把 Mismatch / Missing 的列列出來提醒我。</span></code></pre></div>
+          <h4>解法 2 · 包成「一句話／一鍵」</h4>
+          <p style="font-size:14.5px;color:var(--muted);margin:0 0 8px">讓每天會變的參數（日期、檔名）自動帶入，之後只要說「跑今天的出貨報表」。</p>
+          <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">給 Agent</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">幫我把它變成「一句話就能跑」：
+1) 自動用今天日期當 ship_date 與 output 檔名（Shipping_Output_YYYYMMDD.xlsx）
+2) 從固定資料夾抓 daily / slot / template / PO，不用每天輸入路徑
+3) 也幫我產生一個 run_today.bat，雙擊就能跑
+之後我只要說「跑今天的出貨報表」，你就直接執行並回報對帳摘要（Mismatch/Missing 用紅字）。</span></code></pre></div>
+          <h4>解法 3 · 排程每天自動產出</h4>
+          <p style="font-size:14.5px;color:var(--muted);margin:0 0 8px">最後一步：完全自動。用 Windows 工作排程器或 Claude Code routine 每天定時跑，產出後把對帳摘要寄給你。</p>
+          <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">給 Agent</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="you">幫我設定每天早上 08:30 自動產出今天的出貨報表：
+- 用 Windows 工作排程器（Task Scheduler）每天觸發 run_today.bat
+- 跑完把對帳摘要（Match/Mismatch/Missing 數量＋需人工確認的列）寄到我的信箱（草稿待我確認再寄）
+先把排程設定步驟列給我，我確認後再建立。</span></code></pre></div>
+          <h4>怎麼開放終端機給 Agent（各工具設定）</h4>
+          <div class="table-wrap"><table><thead><tr><th>工具</th><th>怎麼讓它執行終端機指令</th></tr></thead><tbody>
+            <tr><td><b>Claude Code</b></td><td>內建就能在終端機執行。用權限模式控管：逐次核准（最安全）、設定「允許的指令」清單、或自動接受。建議先從逐次核准開始。</td></tr>
+            <tr><td><b>Codex</b></td><td>CLI agent，有核准模式：<strong>Suggest</strong>（每步問你）→ <strong>Auto-edit</strong> → <strong>Full-auto</strong>（在工作目錄內自動執行）。依信任程度逐步放寬。</td></tr>
+            <tr><td><b>Antigravity</b></td><td>Agent IDE，內建整合終端機，agent 可直接在裡面執行指令，可設定自動或逐次核准。</td></tr>
+          </tbody></table></div>
+          <div class="callout danger" style="margin-bottom:0"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><div class="bd"><b>開終端機很強大，務必這樣用</b><p>① 先在<strong>副本資料夾</strong>測試，別直接對原始資料跑；② <strong>最小權限</strong>：限定工作目錄與允許的指令，別一開始就全自動；③ 會覆蓋／刪除／寄送的動作，先看它打算跑什麼再放行；④ 對帳輸出一定<strong>人工檢視「黃／橘色＝需確認」</strong>的列，最終判斷由人負責。</p></div></div>
+        </div>
+
         <div class="card">
           <div class="chips" style="margin-bottom:10px"><span class="chip t">職位 · 業務營運分析師</span><span class="chip">排程：每週一 08:00</span><span class="chip">串接：Drive · 行事曆 · Slack</span></div>
           <h4 style="margin:0 0 6px;font-size:17px">每週業績自動報告</h4>
