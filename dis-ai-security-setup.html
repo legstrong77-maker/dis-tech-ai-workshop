@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI 安全使用設定指南｜Codex & Claude Code 從零設定 — DIS Tech</title>
+<meta name="description" content="給 DIS Tech 同仁的 AI 安全設定指南：在公司網路受限、資料不可外洩的前提下，從零設定 Codex 與 Claude Code 的沙盒、核准政策、權限與隱私，安心在工作上使用 AI。" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Oswald:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+/* ============ Tokens (IASDR-inspired light theme) ============ */
+:root{
+  --font-display:"Oswald","Noto Sans TC",sans-serif;
+  --font-body:"Poppins","Noto Sans TC",system-ui,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  --bg:#ffffff; --bg-mint:#e9fbf3; --bg-soft:#f5f8f7;
+  --ink:#343a40; --text:#495057; --muted:#727b85; --faint:#9aa4ad;
+  --accent:#30b974; --accent-2:#67bd92; --accent-ink:#15805a; --accent-soft:#d8f5e7;
+  --black:#15181c; --border:#e6ebe9; --border-soft:#eef2f0;
+  --warn:#b9770b; --warn-soft:#fdf3df;
+  --danger:#cf3b3b; --danger-soft:#fbe9e9;
+  --info:#1f7ae0; --info-soft:#e6f0fd;
+  --code-bg:#10211b; --code-bd:#1d3a2e;
+  --radius:14px; --radius-sm:9px; --radius-lg:24px;
+  --maxw:900px; --sidebar-w:300px;
+  --shadow:0 14px 40px -26px rgba(20,40,32,.30);
+  --shadow-sm:0 6px 18px -12px rgba(20,40,32,.25);
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.75;font-weight:300;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3,h4{color:var(--ink);font-weight:600;line-height:1.18}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:6px}
+strong{color:var(--ink);font-weight:600}
+
+.layout{display:flex;min-height:100vh}
+.sidebar{width:var(--sidebar-w);flex:0 0 var(--sidebar-w);position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--bg);border-right:1px solid var(--border);padding:24px 16px 48px}
+.brand{display:flex;align-items:center;gap:12px;padding:4px 8px 18px;border-bottom:1px solid var(--border-soft);margin-bottom:10px}
+.brand .logo{width:44px;height:44px;border-radius:13px;flex:0 0 auto;display:grid;place-items:center;overflow:hidden;box-shadow:0 8px 20px -8px rgba(21,128,90,.5)}
+.brand .logo svg{width:44px;height:44px;display:block}
+.brand b{font-family:var(--font-display);font-weight:600;font-size:16px;letter-spacing:.5px;text-transform:uppercase;color:var(--ink);display:block;line-height:1.15}
+.brand span{font-size:11.5px;color:var(--muted);letter-spacing:.4px}
+.nav-group{margin-top:16px}
+.nav-group>p{font-family:var(--font-display);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent-ink);margin:0 0 6px;padding:0 10px;font-weight:600}
+.nav a{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:9px;color:var(--text);font-size:14px;font-weight:400;transition:.15s var(--ease);border:1px solid transparent}
+.nav a .dot{width:6px;height:6px;border-radius:50%;background:var(--border);flex:0 0 auto;transition:.15s}
+.nav a:hover{background:var(--bg-soft);color:var(--ink);text-decoration:none}
+.nav a.active{background:var(--accent-soft);color:var(--ink);font-weight:500}
+.nav a.active .dot{background:var(--accent);box-shadow:0 0 0 3px rgba(48,185,116,.2)}
+.backlink{display:flex;align-items:center;gap:8px;margin:14px 8px 0;padding:9px 11px;border:1px dashed var(--border);border-radius:10px;font-size:12.5px;color:var(--muted);transition:.15s}
+.backlink:hover{background:var(--bg-soft);color:var(--accent-ink);border-color:var(--accent);text-decoration:none}
+.backlink svg{width:15px;height:15px;flex:0 0 auto}
+
+.main{flex:1;min-width:0}
+.content{max-width:var(--maxw);margin:0 auto;padding:0 30px 130px}
+.topbar{display:none;position:sticky;top:0;z-index:60;align-items:center;gap:12px;padding:11px 16px;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+.icon-btn{display:inline-grid;place-items:center;width:42px;height:42px;border-radius:11px;background:var(--bg);border:1px solid var(--border);color:var(--ink);cursor:pointer;transition:.15s}
+.icon-btn:hover{background:var(--bg-soft)}.icon-btn svg{width:20px;height:20px}
+.scrim{display:none;position:fixed;inset:0;background:rgba(20,30,25,.4);z-index:55}
+.reading{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:90;transition:width .1s linear}
+
+/* hero */
+.hero{padding:58px 0 26px;display:grid;grid-template-columns:1.05fr .95fr;gap:30px;align-items:center}
+.kicker{display:inline-flex;align-items:center;gap:9px;font-family:var(--font-mono);font-size:12px;color:var(--accent-ink);background:var(--accent-soft);padding:6px 13px;border-radius:999px;letter-spacing:.03em;margin-bottom:18px}
+.kicker .pulse{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2.2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(48,185,116,.5)}70%{box-shadow:0 0 0 9px rgba(48,185,116,0)}100%{box-shadow:0 0 0 0 rgba(48,185,116,0)}}
+.hero h1{font-family:var(--font-display);font-weight:600;text-transform:uppercase;letter-spacing:.5px;font-size:clamp(32px,5vw,56px);line-height:1.04;margin:0 0 10px;color:var(--ink)}
+.hero h1 .g{color:var(--accent-ink)}
+.hero .sub{font-family:var(--font-display);font-weight:300;font-size:clamp(17px,2.4vw,22px);color:var(--ink);margin:0 0 18px;letter-spacing:.5px}
+.hero .lead{font-size:16.5px;color:var(--text);max-width:54ch;margin:0 0 24px}
+.hero-art{display:flex;justify-content:center}.hero-art svg{width:100%;max-width:430px;height:auto}
+.hero-fl{animation:heroFloat 7s ease-in-out infinite}
+@keyframes heroFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes shieldP{0%,100%{opacity:.2;transform:scale(1)}50%{opacity:.5;transform:scale(1.13)}}
+.hero-art .sp{transform-box:view-box;transform-origin:220px 200px;animation:shieldP 3s ease-in-out infinite}
+.hero-art .tw{animation:twk 2.6s ease-in-out infinite}@keyframes twk{0%,100%{opacity:.3}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.hero-art *{animation:none!important}}
+.lecturer{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:13px 16px;border-radius:var(--radius);background:var(--bg);border:1px solid var(--border);box-shadow:var(--shadow-sm);max-width:520px}
+.lecturer .av{width:44px;height:44px;border-radius:50%;background:var(--black);color:#fff;display:grid;place-items:center;font-family:var(--font-display);font-weight:600;flex:0 0 auto}
+.lecturer .meta b{font-size:15px;color:var(--ink)}.lecturer .meta span{color:var(--muted);display:block;font-size:13px}
+.hero-stats{display:flex;gap:26px;margin-top:22px;flex-wrap:wrap}
+.hero-stats div b{font-family:var(--font-display);font-weight:600;font-size:30px;color:var(--accent-ink);display:block;line-height:1}
+.hero-stats div span{font-size:12.5px;color:var(--muted)}
+
+/* sections */
+section{padding-top:58px;scroll-margin-top:24px}
+.sec-head{position:relative;margin-bottom:22px}
+.sec-num{position:absolute;right:0;top:-22px;font-family:var(--font-display);font-weight:700;font-size:90px;line-height:1;color:var(--accent-soft);z-index:0;pointer-events:none;letter-spacing:-2px}
+.sec-tag{font-family:var(--font-mono);font-size:12px;color:var(--accent-ink);letter-spacing:.08em;position:relative;z-index:1}
+.sec-head h2{font-family:var(--font-display);font-weight:600;text-transform:uppercase;letter-spacing:.5px;font-size:clamp(26px,4vw,40px);margin:4px 0 6px;position:relative;z-index:1;line-height:1.08}
+.sec-sub{color:var(--muted);margin:0;font-size:16px;position:relative;z-index:1}
+.content h3{font-family:var(--font-display);font-weight:500;font-size:22px;margin:34px 0 10px;color:var(--ink);letter-spacing:.3px}
+.content h4{font-size:16.5px;margin:22px 0 8px;color:var(--ink);font-weight:600}
+.content p{margin:0 0 14px}.content ul,.content ol{margin:0 0 16px;padding-left:22px}
+.content li{margin:6px 0}.content li::marker{color:var(--accent)}
+hr{border:none;border-top:1px solid var(--border);margin:50px 0}
+.lead-in{font-size:18px;color:var(--ink);font-weight:300}
+
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow-sm)}
+.grid{display:grid;gap:16px}.grid.c2{grid-template-columns:repeat(2,1fr)}.grid.c3{grid-template-columns:repeat(3,1fr)}
+.feature{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
+.feature .ic{width:42px;height:42px;border-radius:11px;background:var(--accent-soft);color:var(--accent-ink);display:grid;place-items:center;margin-bottom:12px}
+.feature .ic svg{width:22px;height:22px}.feature h4{margin:0 0 4px}.feature p{margin:0;font-size:14px;color:var(--muted)}
+
+.callout{display:flex;gap:14px;border-radius:var(--radius);padding:16px 18px;margin:18px 0;border:1px solid var(--border);background:var(--bg-soft)}
+.callout .ic{flex:0 0 auto;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:#fff}
+.callout .ic svg{width:17px;height:17px}.callout .bd{font-size:15px}
+.callout .bd b{display:block;margin-bottom:2px;color:var(--ink);font-weight:600}.callout p{margin:0;color:var(--text)}
+.callout.tip{background:var(--accent-soft);border-color:#bfeed6}.callout.tip .ic{background:var(--accent)}
+.callout.info{background:var(--info-soft);border-color:#cfe3fb}.callout.info .ic{background:var(--info)}
+.callout.warn{background:var(--warn-soft);border-color:#f3e2b8}.callout.warn .ic{background:var(--warn)}
+.callout.danger{background:var(--danger-soft);border-color:#f3cccc}.callout.danger .ic{background:var(--danger)}
+
+.prompt{margin:16px 0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--code-bd);background:var(--code-bg);box-shadow:var(--shadow-sm)}
+.prompt .ph{display:flex;align-items:center;gap:9px;padding:9px 14px;background:rgba(255,255,255,.05);border-bottom:1px solid var(--code-bd)}
+.prompt .ph .dots{display:flex;gap:6px}.prompt .ph .dots i{width:10px;height:10px;border-radius:50%;display:block}
+.prompt .ph .dots i:nth-child(1){background:#ff5f57}.prompt .ph .dots i:nth-child(2){background:#febc2e}.prompt .ph .dots i:nth-child(3){background:#28c840}
+.prompt .ph .tag{font-family:var(--font-mono);font-size:11.5px;color:#9fc6b3;letter-spacing:.03em;display:flex;align-items:center;gap:7px}
+.copy-btn{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11.5px;color:#cfe7da;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:5px 10px;cursor:pointer;transition:.15s}
+.copy-btn:hover{background:rgba(48,185,116,.25);color:#e8fff3;border-color:rgba(48,185,116,.5)}
+.copy-btn svg{width:13px;height:13px}.copy-btn.done{color:#86efac}
+.prompt pre{margin:0;padding:16px 18px;overflow-x:auto}
+.prompt code{font-family:var(--font-mono);font-size:13px;line-height:1.7;color:#d7ecdf;white-space:pre-wrap;word-break:break-word}
+.prompt .cmt{color:#6f9683;font-style:italic}.prompt .k{color:#8fe3c0}.prompt .v{color:#f4c98a}.prompt .no{color:#f08a8a}
+code.inline{font-family:var(--font-mono);font-size:.85em;background:var(--bg-soft);border:1px solid var(--border);padding:1.5px 6px;border-radius:6px;color:var(--ink)}
+
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);margin:18px 0;box-shadow:var(--shadow-sm)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14.5px}
+th,td{text-align:left;padding:13px 16px;border-bottom:1px solid var(--border-soft);vertical-align:top}
+thead th{background:var(--bg-mint);font-family:var(--font-display);font-weight:500;color:var(--ink);text-transform:uppercase;letter-spacing:.04em;font-size:13px}
+tbody tr:hover{background:var(--bg-soft)}tbody tr:last-child td{border-bottom:none}
+td b{color:var(--accent-ink)} .role td:first-child{font-weight:600;color:var(--ink);white-space:nowrap}
+.ok{color:var(--accent-ink);font-weight:600}.bad{color:var(--danger);font-weight:600}.mid{color:var(--warn);font-weight:600}
+
+.steps{counter-reset:step;display:grid;gap:14px;margin:18px 0}
+.step{position:relative;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px 18px 62px;box-shadow:var(--shadow-sm)}
+.step::before{counter-increment:step;content:counter(step);position:absolute;left:16px;top:17px;width:32px;height:32px;border-radius:10px;background:var(--accent);color:#fff;font-family:var(--font-display);font-weight:600;display:grid;place-items:center;font-size:16px}
+.step h4{margin:0 0 6px;font-size:16px}.step p{margin:0;font-size:14.5px;color:var(--text)}
+
+.install-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow-sm)}
+.install-card .h{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.install-card .b{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:#fff;font-family:var(--font-display);font-weight:600;font-size:13px;flex:0 0 auto}
+.install-card h4{margin:0;font-size:16px}.install-card ol{margin:0 0 6px;padding-left:20px;font-size:14px}.install-card li{margin:5px 0}
+.install-card .mini{font-family:var(--font-mono);font-size:12px;background:var(--code-bg);color:#d7ecdf;border-radius:8px;padding:9px 11px;display:block;margin:8px 0;white-space:pre-wrap;word-break:break-all}
+
+.cheat{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow-sm)}
+.cheat h4{margin:0 0 8px;display:flex;align-items:center;gap:8px}.cheat h4 svg{width:16px;height:16px;color:var(--accent-ink)}
+.cheat code{font-family:var(--font-mono);font-size:12.5px;display:block;background:var(--code-bg);color:#d7ecdf;border-radius:9px;padding:11px 13px;white-space:pre-wrap;line-height:1.6}
+
+.checklist{list-style:none;padding:0;margin:16px 0}
+.checklist li{position:relative;padding:10px 12px 10px 40px;border:1px solid var(--border);border-radius:10px;margin:8px 0;background:var(--bg);font-size:14.5px;box-shadow:var(--shadow-sm)}
+.checklist li::before{content:"";position:absolute;left:12px;top:13px;width:18px;height:18px;border-radius:5px;border:2px solid var(--accent);background:var(--accent-soft)}
+.checklist li::after{content:"✓";position:absolute;left:15px;top:9px;color:var(--accent-ink);font-weight:700;font-size:13px}
+
+.pill{display:inline-block;font-family:var(--font-mono);font-size:11px;padding:2px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent-ink);border:1px solid #bfeed6;letter-spacing:.02em}
+.pill.red{background:var(--danger-soft);color:var(--danger);border-color:#f3cccc}
+.pill.amber{background:var(--warn-soft);color:var(--warn);border-color:#f3e2b8}
+
+.foot{border-top:1px solid var(--border);margin-top:64px;padding:30px 0 8px;color:var(--muted);font-size:13.5px}
+.foot .row{display:flex;flex-wrap:wrap;gap:18px;justify-content:space-between;align-items:flex-end}
+.foot b{color:var(--ink);font-family:var(--font-display);text-transform:uppercase;letter-spacing:.5px}
+.foot a.big{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-body);font-weight:500;color:var(--accent-ink);border:1.5px solid var(--accent);border-radius:10px;padding:9px 15px;margin-top:10px}
+.foot a.big:hover{background:var(--accent);color:#fff;text-decoration:none}
+
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:60;transform:translateX(-100%);transition:transform .25s var(--ease);box-shadow:30px 0 60px -30px rgba(0,0,0,.4)}
+  body.nav-open .sidebar{transform:translateX(0)} body.nav-open .scrim{display:block}
+  .topbar{display:flex}
+  .hero{grid-template-columns:1fr;gap:18px;padding:28px 0 14px}.hero-art{order:-1;max-width:320px;margin:0 auto}
+  .grid.c2,.grid.c3{grid-template-columns:1fr}.content{padding:0 18px 90px}.sec-num{font-size:64px;top:-14px}
+}
+@media(max-width:520px){body{font-size:16px}.reading{display:none}.hero-stats{gap:18px}}
+</style>
+</head>
+<body>
+<div class="reading" id="reading"></div>
+
+<div class="topbar">
+  <button class="icon-btn" id="menuBtn" aria-label="開啟選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  <b style="font-family:var(--font-display);text-transform:uppercase;letter-spacing:.5px;font-size:15px;color:var(--ink)">AI 安全設定指南</b>
+</div>
+<div class="scrim" id="scrim"></div>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true"><svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="lgo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3ad07f"/><stop offset="1" stop-color="#0fa3a8"/></linearGradient></defs><rect width="44" height="44" rx="13" fill="url(#lgo)"/><path d="M22 9l11 4v8c0 7-4.6 11.4-11 13.5C15.6 32.4 11 28 11 21v-8z" fill="none" stroke="#fff" stroke-width="2.3" stroke-linejoin="round"/><path d="M17 21.5l3.4 3.4L28 17.3" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span><b>AI 安全設定</b><span>DIS Tech · 零外洩使用指南</span></span>
+    </div>
+    <nav class="nav" aria-label="章節導覽">
+      <div class="nav-group"><p>開始</p>
+        <a href="#hero" class="active"><span class="dot"></span>關於這份指南</a>
+        <a href="#why"><span class="dot"></span>00 · 為什麼要設定</a>
+        <a href="#principle"><span class="dot"></span>01 · 六大核心原則</a>
+        <a href="#risk"><span class="dot"></span>02 · 資料外洩風險地圖</a>
+      </div>
+      <div class="nav-group"><p>Codex 設定</p>
+        <a href="#cx-install"><span class="dot"></span>03 · 安裝 Codex</a>
+        <a href="#cx-general"><span class="dot"></span>04 · 一般設定建議</a>
+        <a href="#cx-sandbox"><span class="dot"></span>05 · 沙盒與核准（最重要）</a>
+        <a href="#cx-toml"><span class="dot"></span>06 · config.toml 範本</a>
+        <a href="#cx-never"><span class="dot"></span>07 · 絕對不要做</a>
+      </div>
+      <div class="nav-group"><p>Claude Code 設定</p>
+        <a href="#cc-install"><span class="dot"></span>08 · 安裝 Claude Code</a>
+        <a href="#cc-perm"><span class="dot"></span>09 · 權限模式與沙盒</a>
+        <a href="#cc-json"><span class="dot"></span>10 · settings.json 範本</a>
+        <a href="#cc-privacy"><span class="dot"></span>11 · 隱私與遙測</a>
+        <a href="#cc-never"><span class="dot"></span>12 · 絕對不要做</a>
+      </div>
+      <div class="nav-group"><p>收尾</p>
+        <a href="#it"><span class="dot"></span>13 · 給 IT 的部署清單</a>
+        <a href="#rules"><span class="dot"></span>14 · 員工使用守則</a>
+        <a href="#cheat"><span class="dot"></span>15 · 一頁速查表</a>
+      </div>
+    </nav>
+    <a class="backlink" href="dis-tech-vibe-coding-workshop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>回到 Vibe Coding 主講義</a>
+  </aside>
+
+  <main class="main">
+    <div class="content">
+
+      <!-- HERO -->
+      <header class="hero" id="hero">
+        <div>
+          <span class="kicker"><span class="pulse"></span>資安友善 · 從零開始 · 防資料外洩</span>
+          <h1>AI 安全<br><span class="g">使用設定</span></h1>
+          <p class="sub">Codex & Claude Code 從零設定指南</p>
+          <p class="lead">公司網路有管制、<strong>公司資料絕對不能外洩</strong>。這份指南帶同仁從安裝那一刻起，把 <strong>Codex</strong> 與 <strong>Claude Code</strong> 的沙盒、核准政策、權限與隱私一項一項設好——<strong>預設關閉網路、只在工作資料夾內動作、每一步都要你點頭</strong>，讓你在工作上能安心用 AI。</p>
+          <div class="lecturer">
+            <div class="av">DT</div>
+            <div class="meta"><b>DIS Tech · 資訊安全教育訓練</b><span>適用 Windows 11 · 2026 更新版</span></div>
+          </div>
+          <div class="hero-stats">
+            <div><b>0</b><span>對外網路（預設）</span></div>
+            <div><b>2</b><span>個工具完整設定</span></div>
+            <div><b>1</b><span>條鐵則：先問再做</span></div>
+          </div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <svg viewBox="0 0 440 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="資安盾牌與資料保護示意圖">
+            <defs>
+              <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e9fbf3"/><stop offset="1" stop-color="#cdeede"/></linearGradient>
+              <radialGradient id="gcore" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#30b974" stop-opacity="0.5"/><stop offset="1" stop-color="#30b974" stop-opacity="0"/></radialGradient>
+            </defs>
+            <rect x="8" y="8" width="424" height="384" rx="22" fill="url(#g1)"/>
+            <g class="hero-fl">
+              <circle class="sp" cx="220" cy="200" r="120" fill="url(#gcore)"/>
+              <path d="M220 70 l84 30 v66 c0 64-38 96-84 112 -46-16-84-48-84-112 v-66z" fill="#fff" stroke="#30b974" stroke-width="3" stroke-linejoin="round"/>
+              <path d="M182 198 l26 26 56-60" fill="none" stroke="#15805a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+              <g fill="#67bd92"><circle cx="150" cy="150" r="4" class="tw" style="animation-delay:.1s"/><circle cx="292" cy="150" r="4" class="tw" style="animation-delay:.5s"/><circle cx="150" cy="250" r="4" class="tw" style="animation-delay:.9s"/><circle cx="292" cy="250" r="4" class="tw" style="animation-delay:1.3s"/></g>
+              <g stroke="#cbd5cd" stroke-width="2" fill="none" stroke-dasharray="3 6"><path d="M120 120 H80"/><path d="M120 280 H80"/><path d="M320 120 H360"/><path d="M320 280 H360"/></g>
+              <g fill="#f08a8a"><circle cx="80" cy="120" r="6"/><circle cx="80" cy="280" r="6"/><circle cx="360" cy="120" r="6"/><circle cx="360" cy="280" r="6"/></g>
+            </g>
+          </svg>
+        </div>
+      </header>
+
+      <!-- WHY -->
+      <section id="why">
+        <div class="sec-head"><span class="sec-num">00</span><span class="sec-tag">// WHY</span><h2>為什麼要先做這份設定</h2><p class="sec-sub">AI Agent 很強，是因為它能「動手」——而能動手，就代表它有機會把資料送出去。</p></div>
+        <p class="lead-in">Codex 和 Claude Code 這類 <strong>AI Agent</strong>，跟一般聊天 AI 不一樣：它能讀你的檔案、執行命令、甚至連上網路。用對了是超強的助理；但<strong>若沒設定好，它可能在你沒注意時，把公司的程式碼、客戶名單、報價、測試資料傳到外部</strong>。</p>
+        <div class="callout danger"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><div class="bd"><b>我們最怕的一件事：資料外洩</b><p>公司網路本來就有管制。我們的目標是：<strong>就算同仁用了 AI，公司資料也出不去。</strong>做法是把工具的「對外能力」預設關掉，需要時再由人逐次核准。這份指南就是要你<strong>從全新安裝、從 0 開始</strong>，照著把每一個開關設到安全的位置。</p></div></div>
+        <div class="grid c3">
+          <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5z"/></svg></div><h4>預設最安全</h4><p>裝好後第一件事，就是把設定調到「最保守」，而不是貪方便全開。</p></div>
+          <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 2"/></svg></div><h4>先問再做</h4><p>任何越界動作（連網、出資料夾）都要先問你，你看過才放行。</p></div>
+          <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><h4>關起來用</h4><p>沙盒 + 關網路，讓 AI 只能在它的小空間裡做事，碰不到外面。</p></div>
+        </div>
+      </section>
+
+      <hr/>
+
+      <!-- PRINCIPLES -->
+      <section id="principle">
+        <div class="sec-head"><span class="sec-num">01</span><span class="sec-tag">// PRINCIPLES</span><h2>六大核心原則</h2><p class="sec-sub">兩個工具設定細節不同，但背後都是這六條。記住原則，設定就不會錯。</p></div>
+        <div class="grid c2">
+          <div class="card"><h4>① 預設關閉網路</h4><p style="margin:0;font-size:14.5px;color:var(--text)">沒有對外網路 = 資料送不出去。這是<strong>最重要</strong>的一條。需要查網路時，再「逐次」開、用完關。</p></div>
+          <div class="card"><h4>② 只在工作資料夾內</h4><p style="margin:0;font-size:14.5px;color:var(--text)">把 AI 限制在「這個專案資料夾」內，不要讓它能讀寫整台電腦、家目錄或憑證檔。</p></div>
+          <div class="card"><h4>③ 每次越界都要核准</h4><p style="margin:0;font-size:14.5px;color:var(--text)">核准政策設成「依請求」。執行命令、出資料夾、連網路前，AI 都要先問、你才放行。</p></div>
+          <div class="card"><h4>④ 永不開「完整存取」</h4><p style="margin:0;font-size:14.5px;color:var(--text)">「完整存取 / danger-full-access / --yolo」會拿掉所有防護。公司機器一律禁用。</p></div>
+          <div class="card"><h4>⑤ 不亂接外掛與 MCP</h4><p style="margin:0;font-size:14.5px;color:var(--text)">不認識的 MCP 伺服器、瀏覽器外掛不要接。它們可能被植入指令、把資料帶走。</p></div>
+          <div class="card"><h4>⑥ 關遙測、不貼機密</h4><p style="margin:0;font-size:14.5px;color:var(--text)">關掉遙測與自動回報；機密資料不要貼進公開的雲端聊天視窗。</p></div>
+        </div>
+        <div class="callout tip"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><div class="bd"><b>一句話記住</b><p><strong>「關網路、留在資料夾、先問再做、不開全權。」</strong>做到這四件事，外洩風險就被壓到很低。</p></div></div>
+      </section>
+
+      <hr/>
+
+      <!-- RISK MAP -->
+      <section id="risk">
+        <div class="sec-head"><span class="sec-num">02</span><span class="sec-tag">// THREAT MAP</span><h2>資料外洩風險地圖</h2><p class="sec-sub">資料可能從哪裡漏出去？我們又是用哪個設定擋住它？</p></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>外洩途徑</th><th>會怎麼漏</th><th>我們怎麼擋</th></tr></thead>
+          <tbody>
+            <tr><td><b>連網命令</b></td><td><code class="inline">curl</code> / <code class="inline">wget</code> 把檔案上傳到外部網站</td><td>沙盒關網路 + 拒絕這些命令</td></tr>
+            <tr><td><b>內建上網工具</b></td><td>AI 用 WebFetch / 瀏覽器把內容送出</td><td>預設拒絕 WebFetch / WebSearch，要用再逐次開</td></tr>
+            <tr><td><b>遠端傳檔</b></td><td><code class="inline">scp</code> / <code class="inline">ssh</code> / <code class="inline">rsync</code> 傳到外部主機</td><td>沙盒擋 + 拒絕這些命令</td></tr>
+            <tr><td><b>推到雲端 Git</b></td><td><code class="inline">git push</code> 把程式碼推到外部 repo</td><td>關網路 + 對 push 要求核准</td></tr>
+            <tr><td><b>外掛 / MCP</b></td><td>不明 MCP 伺服器把資料帶走，或植入惡意指令</td><td>不接不明 MCP；預設封鎖</td></tr>
+            <tr><td><b>憑證外流</b></td><td>讀到 <code class="inline">.env</code>、SSH 金鑰、API Key 後送出</td><td>限制只在工作資料夾；不讀家目錄與憑證</td></tr>
+            <tr><td><b>遙測 / 訓練</b></td><td>使用紀錄、提示詞被上傳或用於訓練</td><td>關遙測；用商用方案、確認不拿你的資料訓練</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout info"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span><div class="bd"><b>核心觀念：縱深防禦</b><p>不靠單一開關。我們同時用「沙盒（關網路）＋ 權限規則（拒絕危險命令）＋ 核准（人來把關）」三層，任何一層擋住就安全。</p></div></div>
+      </section>
+
+      <hr/>
+
+      <!-- ============ CODEX ============ -->
+      <section id="cx-install">
+        <div class="sec-head"><span class="sec-num">03</span><span class="sec-tag">// CODEX · 安裝</span><h2>安裝 Codex</h2><p class="sec-sub">不論你用的是 Codex App 還是命令列（CLI），設定的觀念都一樣。</p></div>
+        <div class="grid c2">
+          <div class="install-card"><div class="h"><span class="b" style="background:#15181c">A</span><h4>Codex App（圖形介面）</h4></div>
+            <ol><li>從公司核准的來源安裝 Codex App。</li><li>用<strong>公司核准的帳號 / 方案</strong>登入（不要用個人免費帳號處理公司資料）。</li><li>登入後<strong>先別急著用</strong>，直接進「設定」把第 04、05 章的開關設好。</li></ol>
+            <p style="font-size:13px;color:var(--muted);margin:6px 0 0">設定路徑：左側選單 →「組態 / 一般」。</p>
+          </div>
+          <div class="install-card"><div class="h"><span class="b" style="background:#30b974">B</span><h4>Codex CLI（命令列）</h4></div>
+            <ol><li>用 Node.js 安裝（需公司核准的網路 / 鏡像）：</li></ol>
+            <span class="mini">npm install -g @openai/codex</span>
+            <ol start="2"><li>第一次執行會建立設定檔：</li></ol>
+            <span class="mini">~/.codex/config.toml</span>
+            <p style="font-size:13px;color:var(--muted);margin:6px 0 0">CLI 的安全設定全部寫在這個檔案，見第 06 章範本。</p>
+          </div>
+        </div>
+        <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><div class="bd"><b>裝好後的第一步永遠是「設定」</b><p>不要裝完就直接丟公司資料進去用。先把沙盒、核准、完整存取這幾個開關設到安全位置（下兩章），再開始工作。</p></div></div>
+      </section>
+
+      <hr/>
+
+      <!-- CODEX GENERAL -->
+      <section id="cx-general">
+        <div class="sec-head"><span class="sec-num">04</span><span class="sec-tag">// CODEX · 一般</span><h2>一般設定建議</h2><p class="sec-sub">對照 Codex App「一般」頁面，一項一項照下表設。</p></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>設定項（App 中文）</th><th>建議值</th><th>為什麼</th></tr></thead>
+          <tbody>
+            <tr><td><b>工作模式</b></td><td>「用於程式設計」或「適合日常工作」皆可</td><td>只影響顯示多少技術細節，不影響安全。新手選「適合日常工作」。</td></tr>
+            <tr><td><b>預設權限</b></td><td><span class="ok">開</span>（可讀寫工作區）</td><td>讓 AI 能在「工作資料夾」內讀寫檔案是正常需要，安全。</td></tr>
+            <tr><td><b>自動審查</b></td><td><span class="bad">關</span></td><td>這會讓 AI「自動同意」額外存取要求。關掉，改由<strong>你</strong>來核准。</td></tr>
+            <tr><td><b>完整存取權</b></td><td><span class="bad">關（務必）</span></td><td>開了等於可編輯整台電腦的任何檔案、未經同意就連網。風險最高，禁止。</td></tr>
+            <tr><td><b>代理程式環境</b></td><td>依公司規範（Windows 原生 / WSL）</td><td>不影響外洩風險；統一用公司指定的即可。</td></tr>
+            <tr><td><b>整合的終端 Shell</b></td><td>PowerShell（或公司指定）</td><td>習慣問題，不影響安全。</td></tr>
+            <tr><td><b>Codex 相依項目</b></td><td><span class="mid">視需要</span></td><td>允許安裝隨附的 Node.js / Python 工具。屬本機安裝，需要才開。</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout danger"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span><div class="bd"><b>三個開關的重點</b><p><strong>預設權限＝開</strong>（只在工作區）、<strong>自動審查＝關</strong>、<strong>完整存取權＝關</strong>。記住這組合就對了。</p></div></div>
+      </section>
+
+      <hr/>
+
+      <!-- CODEX SANDBOX -->
+      <section id="cx-sandbox">
+        <div class="sec-head"><span class="sec-num">05</span><span class="sec-tag">// CODEX · 最重要</span><h2>沙盒與核准政策</h2><p class="sec-sub">這一頁是整份指南最關鍵的地方——設好它，資料基本就出不去。</p></div>
+        <h3>沙盒設定（Sandbox）</h3>
+        <p>沙盒決定「Codex 執行命令時能做到什麼」。三個選項：</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>沙盒模式</th><th>能做什麼</th><th>建議</th></tr></thead>
+          <tbody>
+            <tr><td><b>唯讀 read-only</b></td><td>只能看檔案，不能改、不能執行命令（要做都要核准）</td><td class="ok">最安全 · 預設首選</td></tr>
+            <tr><td><b>工作區可寫 workspace-write</b></td><td>可讀、可改「工作資料夾」內的檔、可跑本機命令；<strong>網路預設關閉</strong></td><td class="mid">需要跑程式時才用</td></tr>
+            <tr><td><b>完整存取 danger-full-access</b></td><td>沒有任何限制：可碰整台電腦、可連網</td><td class="bad">禁止使用</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout tip"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><div class="bd"><b>關鍵：workspace-write 預設「不能連網」</b><p>就算選了「工作區可寫」，Codex 預設也<strong>不能上網</strong>。除非有人特地把網路打開，否則資料無法被送出去。所以平時請<strong>不要打開網路存取</strong>。</p></div></div>
+        <h3>核准政策（Approval policy）</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>核准政策</th><th>意思</th><th>建議</th></tr></thead>
+          <tbody>
+            <tr><td><b>依請求 on-request</b></td><td>預設在沙盒內工作，<strong>要越界（連網、出資料夾）時先問你</strong></td><td class="ok">建議</td></tr>
+            <tr><td><b>untrusted</b></td><td>只要不是受信任的命令，都先問</td><td class="mid">更嚴格亦可</td></tr>
+            <tr><td><b>never 從不詢問</b></td><td>完全不停下來問，全自動執行</td><td class="bad">禁止使用</td></tr>
+          </tbody>
+        </table></div>
+        <div class="steps">
+          <div class="step"><h4>沙盒設定 → 選「唯讀」</h4><p>一般文件處理、看資料、問問題，唯讀就夠。需要它實際跑程式 / 改檔，再臨時切「工作區可寫」。</p></div>
+          <div class="step"><h4>核准政策 → 選「依請求」</h4><p>任何越界動作都會跳出來問你，看清楚再按同意。</p></div>
+          <div class="step"><h4>網路存取 → 保持關閉</h4><p>workspace-write 下不要打開 network access。真的需要查網路，當次開、用完關。</p></div>
+          <div class="step"><h4>完整存取 → 永遠關</h4><p>不論 App 或 CLI，都不要啟用 danger-full-access。</p></div>
+        </div>
+      </section>
+
+      <hr/>
+
+      <!-- CODEX TOML -->
+      <section id="cx-toml">
+        <div class="sec-head"><span class="sec-num">06</span><span class="sec-tag">// CODEX · CLI</span><h2>config.toml 安全範本</h2><p class="sec-sub">用 CLI 的同仁，把這段貼進 <code class="inline">~/.codex/config.toml</code> 即可。</p></div>
+        <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">~/.codex/config.toml</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code><span class="cmt"># ===== DIS Tech 安全預設 =====</span>
+<span class="cmt"># 越界(連網/出工作區)前一律先問你</span>
+<span class="k">approval_policy</span> = <span class="v">"on-request"</span>
+
+<span class="cmt"># 預設唯讀最安全；要實際跑程式再改成 "workspace-write"</span>
+<span class="k">sandbox_mode</span> = <span class="v">"read-only"</span>
+
+<span class="cmt"># 即使切到 workspace-write，也務必保持網路關閉</span>
+[<span class="k">sandbox_workspace_write</span>]
+<span class="k">network_access</span> = <span class="no">false</span>   <span class="cmt"># ← 關鍵：關網路 = 資料出不去</span>
+
+<span class="cmt"># 隱私：不要把你的提示詞(可能含原始碼)寫進記錄</span>
+<span class="k">log_user_prompt</span> = <span class="no">false</span></code></pre></div>
+        <div class="callout info"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span><div class="bd"><b>臨時要跑程式時</b><p>把 <code class="inline">sandbox_mode</code> 改成 <code class="inline">"workspace-write"</code> 即可——它仍只能在工作資料夾內動作、且<strong>網路仍是關的</strong>。工作完可以再改回 <code class="inline">"read-only"</code>。</p></div></div>
+      </section>
+
+      <hr/>
+
+      <!-- CODEX NEVER -->
+      <section id="cx-never">
+        <div class="sec-head"><span class="sec-num">07</span><span class="sec-tag">// CODEX · 紅線</span><h2>Codex 絕對不要做</h2><p class="sec-sub">以下任一個，等於把所有防護拆掉。</p></div>
+        <div class="callout danger"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span><div class="bd"><b>不要開「完整存取權 / danger-full-access」</b><p>它會移除檔案與網路的所有界線，AI 可在未經你同意下連網、改任何檔。公司機器禁止。</p></div></div>
+        <div class="callout danger"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span><div class="bd"><b>不要用 <code class="inline" style="background:rgba(255,255,255,.4)">--dangerously-bypass-approvals-and-sandbox</code>（別名 <code class="inline" style="background:rgba(255,255,255,.4)">--yolo</code>）</b><p>CLI 的「無沙盒、無核准」模式。沒有任何把關，最危險。</p></div></div>
+        <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></span><div class="bd"><b>不要把核准政策設成「never」</b><p>等於全自動放行，AI 做什麼都不問你。</p></div></div>
+      </section>
+
+      <hr/>
+
+      <!-- ============ CLAUDE CODE ============ -->
+      <section id="cc-install">
+        <div class="sec-head"><span class="sec-num">08</span><span class="sec-tag">// CLAUDE CODE · 安裝</span><h2>安裝 Claude Code</h2><p class="sec-sub">Claude Code 以命令列為主，安全設定寫在設定檔裡。</p></div>
+        <div class="grid c2">
+          <div class="install-card"><div class="h"><span class="b" style="background:#d97757">1</span><h4>安裝（Windows · PowerShell）</h4></div>
+            <span class="mini">irm https://claude.ai/install.ps1 | iex</span>
+            <p style="font-size:13.5px;color:var(--text);margin:6px 0 0">或用 WinGet：</p>
+            <span class="mini">winget install Anthropic.ClaudeCode</span>
+          </div>
+          <div class="install-card"><div class="h"><span class="b" style="background:#15805a">2</span><h4>登入與設定檔</h4></div>
+            <ol><li>啟動後輸入 <code class="inline">/login</code>，用<strong>公司核准的方案</strong>登入。</li><li>使用者設定檔位置：</li></ol>
+            <span class="mini">~/.claude/settings.json</span>
+            <p style="font-size:13px;color:var(--muted);margin:6px 0 0">把第 10 章範本貼進這個檔案。</p>
+          </div>
+        </div>
+        <div class="callout info"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span><div class="bd"><b>設定檔有三層</b><p><strong>使用者層</strong>（<code class="inline">~/.claude/settings.json</code>，套用到所有專案）、<strong>專案層</strong>（<code class="inline">.claude/settings.json</code>，可進版控分享）、<strong>IT 強制層</strong>（managed settings，使用者無法覆蓋）。一般同仁設「使用者層」即可。</p></div></div>
+      </section>
+
+      <hr/>
+
+      <!-- CLAUDE CODE PERMISSIONS -->
+      <section id="cc-perm">
+        <div class="sec-head"><span class="sec-num">09</span><span class="sec-tag">// CLAUDE CODE · 權限</span><h2>權限模式與沙盒</h2><p class="sec-sub">三件事：起始模式設保守、拒絕外洩工具、（進階）開沙盒。</p></div>
+        <h3>起始權限模式（defaultMode）</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>模式</th><th>意思</th><th>建議</th></tr></thead>
+          <tbody>
+            <tr><td><b>plan 計畫</b></td><td>唯讀探索，不會改檔；先看它的計畫再放行</td><td class="ok">最安全 · 起始首選</td></tr>
+            <tr><td><b>default 預設</b></td><td>第一次用到某工具時會先問你</td><td class="ok">日常可用</td></tr>
+            <tr><td><b>acceptEdits</b></td><td>自動同意檔案編輯</td><td class="mid">熟悉後、在工作區內才用</td></tr>
+            <tr><td><b>bypassPermissions</b></td><td>跳過所有詢問</td><td class="bad">禁止使用</td></tr>
+          </tbody>
+        </table></div>
+        <h3>拒絕會外洩的工具（最重要）</h3>
+        <p>用 <code class="inline">permissions.deny</code> 把「能把資料送出去」的工具與命令直接封鎖。被 deny 的規則最優先、不能被例外放行。</p>
+        <h3>沙盒（進階）</h3>
+        <p>Claude Code 另有 OS 層沙盒，可限制 Bash 命令的檔案與網路存取。<strong>Windows 需在 WSL2 下使用</strong>。設定鍵與細節以官方文件為準：<a href="https://code.claude.com/docs/en/sandboxing" target="_blank" rel="noopener">code.claude.com/docs/en/sandboxing</a>。沒有 WSL 也沒關係——靠下面的 deny 規則＋plan 模式就已足夠安全。</p>
+      </section>
+
+      <hr/>
+
+      <!-- CLAUDE CODE JSON -->
+      <section id="cc-json">
+        <div class="sec-head"><span class="sec-num">10</span><span class="sec-tag">// CLAUDE CODE · 範本</span><h2>settings.json 安全範本</h2><p class="sec-sub">貼進 <code class="inline">~/.claude/settings.json</code>。這份預設「不上網、先問再做、不接 MCP」。</p></div>
+        <div class="prompt"><div class="ph"><span class="dots"><i></i><i></i><i></i></span><span class="tag">~/.claude/settings.json</span><button class="copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>複製</button></div><pre><code>{
+  <span class="k">"permissions"</span>: {
+    <span class="cmt">// 起始用最保守的 plan(唯讀計畫)模式</span>
+    <span class="k">"defaultMode"</span>: <span class="v">"plan"</span>,
+
+    <span class="cmt">// 封鎖所有「把資料送出去」的工具與命令</span>
+    <span class="k">"deny"</span>: [
+      <span class="v">"WebFetch"</span>,
+      <span class="v">"WebSearch"</span>,
+      <span class="v">"Bash(curl:*)"</span>,
+      <span class="v">"Bash(wget:*)"</span>,
+      <span class="v">"Bash(scp:*)"</span>,
+      <span class="v">"Bash(ssh:*)"</span>,
+      <span class="v">"Bash(rsync:*)"</span>,
+      <span class="v">"Bash(git push:*)"</span>,
+      <span class="v">"mcp__*"</span>            <span class="cmt">// 預設封鎖所有 MCP 外掛</span>
+    ],
+
+    <span class="cmt">// 高風險命令一律先問</span>
+    <span class="k">"ask"</span>: [
+      <span class="v">"Bash(rm:*)"</span>,
+      <span class="v">"Bash(sudo:*)"</span>
+    ]
+  },
+
+  <span class="cmt">// 關閉遙測、錯誤回報、自動更新與非必要連線</span>
+  <span class="k">"env"</span>: {
+    <span class="k">"DISABLE_TELEMETRY"</span>: <span class="v">"1"</span>,
+    <span class="k">"DISABLE_ERROR_REPORTING"</span>: <span class="v">"1"</span>,
+    <span class="k">"DISABLE_AUTOUPDATER"</span>: <span class="v">"1"</span>,
+    <span class="k">"CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC"</span>: <span class="v">"1"</span>
+  }
+}</code></pre></div>
+        <div class="callout tip"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><div class="bd"><b>需要某個被擋的功能時</b><p>例如真的要查網路，請<strong>逐次</strong>用 <code class="inline">/permissions</code> 臨時允許特定網域，用完再拿掉；不要直接把整條 deny 刪掉。</p></div></div>
+        <div class="callout info"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span><div class="bd"><b>命令規則寫法</b><p><code class="inline">Bash(curl:*)</code> 代表「任何 curl 開頭的命令」。你也可以加 <code class="inline">allow</code> 白名單（如 <code class="inline">Bash(npm run test:*)</code>）只放行特定安全命令。完整語法見 <a href="https://code.claude.com/docs/en/permissions" target="_blank" rel="noopener">官方權限文件</a>。</p></div></div>
+      </section>
+
+      <hr/>
+
+      <!-- CLAUDE CODE PRIVACY -->
+      <section id="cc-privacy">
+        <div class="sec-head"><span class="sec-num">11</span><span class="sec-tag">// CLAUDE CODE · 隱私</span><h2>隱私與遙測</h2><p class="sec-sub">把這些環境變數設成關閉，減少對外的非必要連線。</p></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>環境變數</th><th>設成</th><th>作用</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">DISABLE_TELEMETRY</code></td><td><b>1</b></td><td>關閉使用情形遙測</td></tr>
+            <tr><td><code class="inline">DISABLE_ERROR_REPORTING</code></td><td><b>1</b></td><td>關閉錯誤回報上傳</td></tr>
+            <tr><td><code class="inline">DISABLE_AUTOUPDATER</code></td><td><b>1</b></td><td>關閉自動更新（改由 IT 控管版本）</td></tr>
+            <tr><td><code class="inline">CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC</code></td><td><b>1</b></td><td>一鍵關閉各種非必要對外連線</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout info"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span><div class="bd"><b>關於「不拿你的資料訓練」</b><p>是否用你的資料訓練，<strong>取決於帳號方案</strong>：商用方案（Team / Enterprise / Console / API）受商用條款保護、預設不拿來訓練；個人 Free/Pro 則要到帳號隱私設定關閉。<strong>處理公司資料請一律使用公司核准的商用方案</strong>。詳見 <a href="https://www.anthropic.com/legal/privacy" target="_blank" rel="noopener">Anthropic 隱私政策</a>。</p></div></div>
+      </section>
+
+      <hr/>
+
+      <!-- CLAUDE CODE NEVER -->
+      <section id="cc-never">
+        <div class="sec-head"><span class="sec-num">12</span><span class="sec-tag">// CLAUDE CODE · 紅線</span><h2>Claude Code 絕對不要做</h2><p class="sec-sub">這些等於關掉所有防護。</p></div>
+        <div class="callout danger"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span><div class="bd"><b>不要用 <code class="inline" style="background:rgba(255,255,255,.4)">--dangerously-skip-permissions</code>（＝ bypassPermissions 模式）</b><p>會跳過所有權限詢問。只有在「完全隔離、丟掉也沒差」的容器 / 虛擬機才考慮，公司日常機器禁止。</p></div></div>
+        <div class="callout danger"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span><div class="bd"><b>不要隨便把整段 <code class="inline" style="background:rgba(255,255,255,.4)">deny</code> 刪掉</b><p>需要某功能就逐次開、用完關，不要為了方便把網路 / curl / git push 的封鎖整個拿掉。</p></div></div>
+        <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></span><div class="bd"><b>不要接不明的 MCP 伺服器</b><p>MCP 回傳的內容可能藏有惡意指令（提示注入），誘導 AI 把資料送出去。只接公司核可的來源。</p></div></div>
+      </section>
+
+      <hr/>
+
+      <!-- IT -->
+      <section id="it">
+        <div class="sec-head"><span class="sec-num">13</span><span class="sec-tag">// FOR IT</span><h2>給 IT 的部署清單</h2><p class="sec-sub">想全公司統一鎖定、不讓同仁自行放寬，用「強制設定」最有效。</p></div>
+        <ul class="checklist">
+          <li><b>Codex：</b>用 <code class="inline">requirements.toml</code> 強制禁止 <code class="inline">approval_policy = "never"</code> 與 <code class="inline">sandbox_mode = "danger-full-access"</code>。</li>
+          <li><b>Claude Code：</b>部署 managed settings 到 <code class="inline">C:\Program Files\ClaudeCode\managed-settings.json</code>（使用者無法覆蓋）。</li>
+          <li>在 managed settings 內放入第 10 章的 <code class="inline">deny</code> 規則與遙測 <code class="inline">env</code>，並停用 bypassPermissions 模式。</li>
+          <li>預設封鎖 MCP（<code class="inline">"mcp__*"</code> deny），只開放公司白名單。</li>
+          <li>統一登入<strong>公司核准的商用方案</strong>（確保不拿資料訓練、可稽核）。</li>
+          <li>搭配公司既有的網路出口管制 / Proxy，做雙重保險。</li>
+          <li>教同仁用 <code class="inline">/permissions</code>（Claude Code）檢視目前生效的規則。</li>
+        </ul>
+        <div class="callout info"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span><div class="bd"><b>強制設定 vs. 使用者設定</b><p>使用者自己設的可被改回去；<strong>IT 強制層（managed / requirements）使用者無法覆蓋</strong>，是最可靠的防線。一般同仁照 03–12 章設好即可，IT 再加這層強制。</p></div></div>
+      </section>
+
+      <hr/>
+
+      <!-- RULES -->
+      <section id="rules">
+        <div class="sec-head"><span class="sec-num">14</span><span class="sec-tag">// HUMAN RULES</span><h2>員工使用守則</h2><p class="sec-sub">工具設好之外，人也要養成習慣。</p></div>
+        <div class="grid c2">
+          <div class="card" style="border-color:#bfeed6;background:var(--accent-soft)"><h4 style="color:var(--accent-ink)">✓ 請這樣做</h4><ul style="margin:0">
+            <li>用<strong>公司核准的帳號 / 商用方案</strong>。</li>
+            <li>在<strong>專屬的工作資料夾</strong>內開 AI，不要在桌面 / 整顆 C 槽跑。</li>
+            <li>跳出核准視窗時<strong>看清楚再按同意</strong>。</li>
+            <li>要連網 / 推 Git 時<strong>逐次開、用完關</strong>。</li>
+            <li>定期檢視生效的權限規則。</li>
+          </ul></div>
+          <div class="card" style="border-color:#f3cccc;background:var(--danger-soft)"><h4 style="color:var(--danger)">✗ 請不要</h4><ul style="margin:0">
+            <li>把<strong>客戶名單、報價、原始碼、機密</strong>貼進公開的雲端聊天。</li>
+            <li>開<strong>完整存取 / --yolo / bypass</strong> 等全權模式。</li>
+            <li>為了省事把<strong>網路與封鎖規則整個關掉</strong>。</li>
+            <li>接<strong>來路不明的 MCP / 外掛 / 連結</strong>。</li>
+            <li>用<strong>個人免費帳號</strong>處理公司資料。</li>
+          </ul></div>
+        </div>
+      </section>
+
+      <hr/>
+
+      <!-- CHEAT -->
+      <section id="cheat">
+        <div class="sec-head"><span class="sec-num">15</span><span class="sec-tag">// CHEAT SHEET</span><h2>一頁速查表</h2><p class="sec-sub">設定時對照這張就好。</p></div>
+        <div class="grid c2">
+          <div class="cheat"><h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5z"/></svg>Codex 安全設定</h4><code>沙盒設定      = 唯讀 read-only
+核准政策      = 依請求 on-request
+完整存取權    = 關（禁用）
+自動審查      = 關
+網路存取      = 關（network_access=false）
+絕不使用      = --yolo / danger-full-access</code></div>
+          <div class="cheat"><h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5z"/></svg>Claude Code 安全設定</h4><code>defaultMode  = "plan"
+deny         = WebFetch / WebSearch /
+               curl / wget / scp / ssh /
+               git push / mcp__*
+env          = 遙測全部 = "1"(關閉)
+絕不使用      = --dangerously-skip-permissions</code></div>
+        </div>
+        <div class="callout tip"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><div class="bd"><b>最後再記一次</b><p><strong>關網路、留在資料夾、先問再做、不開全權、不接亂源、不貼機密。</strong></p></div></div>
+      </section>
+
+      <!-- FOOTER -->
+      <footer class="foot">
+        <div class="row">
+          <div>
+            <b>DIS Tech · AI 安全使用設定指南</b>
+            <p style="margin:8px 0 0">資料來源：Codex 官方文件（developers.openai.com/codex）、Claude Code 官方文件（code.claude.com/docs）。實際設定請以最新官方文件為準。</p>
+            <a class="big" href="dis-tech-vibe-coding-workshop.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>回到 Vibe Coding 主講義</a>
+          </div>
+          <div style="text-align:right;color:var(--faint)">內部教育訓練文件<br/>請勿外流</div>
+        </div>
+      </footer>
+
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+  var body=document.body;
+  var menuBtn=document.getElementById('menuBtn'), scrim=document.getElementById('scrim');
+  function closeNav(){body.classList.remove('nav-open')}
+  if(menuBtn)menuBtn.addEventListener('click',function(){body.classList.toggle('nav-open')});
+  if(scrim)scrim.addEventListener('click',closeNav);
+  document.querySelectorAll('.nav a').forEach(function(a){a.addEventListener('click',closeNav)});
+
+  var links=[].slice.call(document.querySelectorAll('.nav a[href^="#"]'));
+  var map={}; links.forEach(function(l){map[l.getAttribute('href').slice(1)]=l;});
+  var targets=links.map(function(l){return document.getElementById(l.getAttribute('href').slice(1));}).filter(Boolean);
+  if('IntersectionObserver' in window){
+    var spy=new IntersectionObserver(function(es){es.forEach(function(en){
+      if(en.isIntersecting){links.forEach(function(l){l.classList.remove('active')});var a=map[en.target.id];if(a)a.classList.add('active');}
+    });},{rootMargin:'-12% 0px -72% 0px',threshold:0});
+    targets.forEach(function(t){spy.observe(t)});
+  }
+
+  var bar=document.getElementById('reading');
+  function onScroll(){var h=document.documentElement;var max=h.scrollHeight-h.clientHeight;var p=max>0?(h.scrollTop)/max*100:0;if(bar)bar.style.width=p+'%';}
+  window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+
+  function fb(t){var ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);}
+  document.querySelectorAll('.copy-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var b=btn.closest('.prompt');if(!b)return;var code=b.querySelector('code');if(!code)return;
+      var text=code.innerText;
+      function done(){var o=btn.innerHTML;btn.classList.add('done');btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>已複製';setTimeout(function(){btn.classList.remove('done');btn.innerHTML=o;},1600);}
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done).catch(function(){fb(text);done();});}else{fb(text);done();}
+    });
+  });
+})();
+</script>
+</body>
+</html>
